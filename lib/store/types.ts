@@ -1,0 +1,43 @@
+import type {
+  Alert,
+  AlertOutcome,
+  AlertResponder,
+  AlertStatus,
+  CreateAlertInput,
+  Metrics,
+  Profile,
+} from "@/lib/types";
+
+// A single interface that both the demo store and the Supabase store implement,
+// so every screen is backend-agnostic. Subscriptions return an unsubscribe fn.
+export interface Store {
+  readonly mode: "demo" | "supabase";
+
+  // profiles
+  getProfile(): Promise<Profile | null>;
+  saveProfile(input: Partial<Profile> & { name: string; phone: string }): Promise<Profile>;
+  setAvailability(available: boolean): Promise<void>;
+  listResponders(): Promise<Profile[]>;
+
+  // alerts
+  createAlert(input: CreateAlertInput): Promise<Alert>;
+  getAlert(id: string): Promise<Alert | null>;
+  listActiveAlerts(): Promise<Alert[]>;
+  acceptAlert(alertId: string, etaMinutes: number): Promise<void>;
+  setStatus(alertId: string, status: AlertStatus): Promise<void>;
+  resolveAlert(alertId: string, outcome: AlertOutcome): Promise<void>;
+  cancelAlert(alertId: string): Promise<void>;
+
+  // metrics ledger
+  listAlertResponders(alertId: string): Promise<AlertResponder[]>;
+  getMetrics(): Promise<Metrics>;
+
+  // realtime
+  subscribeAlert(id: string, cb: (a: Alert | null) => void): () => void;
+  subscribeActiveAlerts(cb: (a: Alert[]) => void): () => void;
+  subscribeMetrics(cb: (m: Metrics) => void): () => void;
+
+  // demo affordances (no-op on supabase)
+  seedDemoData(): Promise<void>;
+  resetDemoData(): Promise<void>;
+}

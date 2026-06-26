@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-sand-50 text-ink-900 font-sans antialiased;
+    /* never below 16px body (accessibility floor) */
+    font-size: 18px;
+    line-height: 1.6;
+    min-height: 100dvh;
+  }
+
+  /* Visible keyboard focus everywhere (accessibility floor). */
+  :focus-visible {
+    outline: 3px solid #16202b;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Honour reduced-motion: kill the heartbeat + transitions. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Tabular, spaced locator code — reads cleanly under stress. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+}
+
+@layer components {
+  /* Leaflet tiles can look harsh; soften corners to match the card system. */
+  .leaflet-container {
+    @apply rounded-card;
+    font-family: inherit;
+    background: #ece4d6;
+  }
+  /* Keep Leaflet controls out of the way of RTL layouts. */
+  .leaflet-control-attribution {
+    font-size: 10px;
+  }
+}

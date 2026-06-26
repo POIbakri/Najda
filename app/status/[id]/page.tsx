@@ -42,9 +42,10 @@ export default function StatusPage() {
     if (db.mode !== "supabase" || !demoAutopilot) return;
     if (!alert || alert.status !== "searching" || alert.accepted_by || autopilotFired.current) return;
     const timer = setTimeout(async () => {
+      if (autopilotFired.current) return;
+      autopilotFired.current = true; // claim synchronously, before any await
       const cur = await db.getAlert(id);
-      if (cur && cur.status === "searching" && !cur.accepted_by && !autopilotFired.current) {
-        autopilotFired.current = true;
+      if (cur && cur.status === "searching" && !cur.accepted_by) {
         void db.simulateNearestResponder(id);
       }
     }, 6000);

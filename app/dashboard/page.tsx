@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, Users, Timer, Gauge, MessageSquare, RotateCcw } from "lucide-react";
+import { Activity, Users, Timer, Gauge, MessageSquare, RotateCcw, CheckCircle2 } from "lucide-react";
 import { useI18n } from "@/components/i18n";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,8 @@ export default function DashboardPage() {
   useEffect(() => {
     const unsubM = db.subscribeMetrics(setMetrics);
     const unsubA = db.subscribeActiveAlerts(setAlerts);
-    void db.listResponders().then(setResponders);
-    const t = setInterval(() => void db.listResponders().then(setResponders), 5000);
+    void db.listResponders().then(setResponders).catch(console.error);
+    const t = setInterval(() => void db.listResponders().then(setResponders).catch(console.error), 5000);
     return () => {
       unsubM();
       unsubA();
@@ -47,6 +47,8 @@ export default function DashboardPage() {
         <Metric icon={<MessageSquare className="size-5" />} label={t("dashboard.smsDeliveries")} value={metrics ? num(metrics.notificationsSent) : "—"} />
         <Metric icon={<Activity className="size-5" />} label={t("dashboard.activeAlerts")} value={num(alerts.length)} />
         <Metric icon={<Users className="size-5" />} label={t("dashboard.respondersOnline")} value={num(online)} />
+        <Metric icon={<Activity className="size-5" />} label={t("dashboard.alertsTotal")} value={metrics ? num(metrics.alertsTotal) : "—"} />
+        <Metric icon={<CheckCircle2 className="size-5" />} label={t("dashboard.alertsResolved")} value={metrics ? num(metrics.alertsResolved) : "—"} />
       </div>
 
       <p className="text-caption text-ink-600">{t("dashboard.evidenceNote")}</p>

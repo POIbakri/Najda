@@ -32,6 +32,9 @@ function db(): SupabaseClient {
   return client;
 }
 
+/** Surface Supabase failures instead of swallowing them into empty state. */
+const logErr = (e: unknown) => console.error("[najda supabase]", e);
+
 function getMeId(): string | null {
   return typeof window !== "undefined" ? window.localStorage.getItem(ME_KEY) : null;
 }
@@ -89,7 +92,8 @@ export const supabaseStore: Store = {
   },
 
   async listResponders() {
-    const { data } = await db().from("profiles").select("*").eq("is_responder", true);
+    const { data, error } = await db().from("profiles").select("*").eq("is_responder", true);
+    if (error) logErr(error);
     return (data as Profile[]) ?? [];
   },
 
@@ -136,16 +140,18 @@ export const supabaseStore: Store = {
   },
 
   async getAlert(id) {
-    const { data } = await db().from("alerts").select("*").eq("id", id).maybeSingle();
+    const { data, error } = await db().from("alerts").select("*").eq("id", id).maybeSingle();
+    if (error) logErr(error);
     return (data as Alert) ?? null;
   },
 
   async listActiveAlerts() {
-    const { data } = await db()
+    const { data, error } = await db()
       .from("alerts")
       .select("*")
       .not("status", "in", "(resolved,cancelled)")
       .order("created_at", { ascending: false });
+    if (error) logErr(error);
     return (data as Alert[]) ?? [];
   },
 
@@ -191,42 +197,44 @@ export const supabaseStore: Store = {
   },
 
   async getMetrics() {
-    const [{ data: alerts }, { data: responders }] = await Promise.all([
+    const [{ data: alerts, error: e1 }, { data: responders, error: e2 }] = await Promise.all([
       db().from("alerts").select("*"),
       db().from("alert_responders").select("*"),
     ]);
+    if (e1) logErr(e1);
+    if (e2) logErr(e2);
     return computeMetrics((alerts as Alert[]) ?? [], (responders as AlertResponder[]) ?? []);
   },
 
   subscribeAlert(id, cb) {
-    void this.getAlert(id).then(cb);
+    void this.getAlert(id).then(cb).catch(logErr);
     const ch = db()
       .channel(`alert:${id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts", filter: `id=eq.${id}` }, () =>
-        void this.getAlert(id).then(cb),
+        void this.getAlert(id).then(cb).catch(logErr),
       )
       .subscribe();
     return () => void db().removeChannel(ch);
   },
 
   subscribeActiveAlerts(cb) {
-    void this.listActiveAlerts().then(cb);
+    void this.listActiveAlerts().then(cb).catch(logErr);
     const ch = db()
       .channel("alerts:active")
       .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () =>
-        void this.listActiveAlerts().then(cb),
+        void this.listActiveAlerts().then(cb).catch(logErr),
       )
       .subscribe();
     return () => void db().removeChannel(ch);
   },
 
   subscribeMetrics(cb) {
-    void this.getMetrics().then(cb);
+    void this.getMetrics().then(cb).catch(logErr);
     const ch = db()
       .channel("metrics")
-      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => void this.getMetrics().then(cb))
+      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => void this.getMetrics().then(cb).catch(logErr))
       .on("postgres_changes", { event: "*", schema: "public", table: "alert_responders" }, () =>
-        void this.getMetrics().then(cb),
+        void this.getMetrics().then(cb).catch(logErr),
       )
       .subscribe();
     return () => void db().removeChannel(ch);
@@ -277,17 +285,20 @@ export const supabaseStore: Store = {
         .update({ accepted_lat: a.accepted_lat + (a.lat - a.accepted_lat) * frac, accepted_lng: a.accepted_lng + (a.lng - a.accepted_lng) * frac })
         .eq("id", alertId);
     };
-    setTimeout(async () => {
+    // Each step is wrapped so a transient Supabase error never becomes an
+    // unhandled rejection; the status guards make missed steps harmless.
+    const step = (fn: () => Promise<void>, ms: number) => setTimeout(() => void fn().catch(logErr), ms);
+    step(async () => {
       const a = await controlled();
       if (a?.status === "accepted") await db().from("alerts").update({ status: "en_route" }).eq("id", alertId).eq("status", "accepted");
     }, 3000);
-    setTimeout(() => void move(0.5), 5000);
-    setTimeout(() => void move(0.5), 7000);
-    setTimeout(async () => {
+    step(() => move(0.5), 5000);
+    step(() => move(0.5), 7000);
+    step(async () => {
       const a = await controlled();
       if (a?.status === "en_route") await db().from("alerts").update({ status: "on_scene", accepted_lat: a.lat, accepted_lng: a.lng }).eq("id", alertId).eq("status", "en_route");
     }, 9000);
-    setTimeout(async () => {
+    step(async () => {
       const a = await controlled();
       if (a?.status === "on_scene") await db().from("alerts").update({ status: "resolved", outcome: "helped", resolved_at: nowIso() }).eq("id", alertId).eq("status", "on_scene");
     }, 13000);

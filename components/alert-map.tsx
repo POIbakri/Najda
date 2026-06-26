@@ -60,7 +60,20 @@ export function AlertMap({ requester, responder, accuracyM, compact, className }
       attribution: "© OpenStreetMap",
     }).addTo(map);
     mapRef.current = map;
+
+    // Leaflet measures the container at init; if it mounts hidden/animating or
+    // the layout shifts (web font, card transition), tiles render half-filled.
+    // Recompute on the first frames and on any container resize.
+    map.invalidateSize(false);
+    const t0 = setTimeout(() => map.invalidateSize(false), 150);
+    const t1 = setTimeout(() => map.invalidateSize(false), 500);
+    const ro = new ResizeObserver(() => map.invalidateSize(false));
+    ro.observe(elRef.current);
+
     return () => {
+      clearTimeout(t0);
+      clearTimeout(t1);
+      ro.disconnect();
       map.remove();
       mapRef.current = null;
     };

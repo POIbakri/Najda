@@ -51,7 +51,16 @@ export function ManualPinMap({
     });
 
     mapRef.current = map;
+
+    // Recompute size after mount / on resize so tiles fill the container.
+    map.invalidateSize(false);
+    const t0 = setTimeout(() => map.invalidateSize(false), 150);
+    const ro = new ResizeObserver(() => map.invalidateSize(false));
+    ro.observe(elRef.current);
+
     return () => {
+      clearTimeout(t0);
+      ro.disconnect();
       map.remove();
       mapRef.current = null;
       markerRef.current = null;

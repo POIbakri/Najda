@@ -26,17 +26,27 @@ export async function queueOrCreateAlert(input: CreateAlertInput): Promise<Alert
 }
 
 /** Flush any alerts queued while offline. Safe to call repeatedly. */
+let flushing = false;
 export async function flushQueue(): Promise<number> {
+  if (flushing) return 0; // guard against concurrent flushes creating duplicates
+  flushing = true;
   let sent = 0;
   try {
     const items = await allQueued();
     for (const item of items) {
-      await db.createAlert(item.input);
-      await removeQueued(item.id);
-      sent++;
+      try {
+        await db.createAlert(item.input);
+        await removeQueued(item.id);
+        sent++;
+      } catch (e) {
+        // one bad item shouldn't block the rest; it stays queued for next time
+        console.error("flushQueue item failed", e);
+      }
     }
-  } catch {
-    /* try again on the next online event */
+  } catch (e) {
+    console.error("flushQueue failed", e);
+  } finally {
+    flushing = false;
   }
   return sent;
 }

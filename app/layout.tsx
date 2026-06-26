@@ -4,6 +4,7 @@ import "./globals.css";
 import { I18nProvider } from "@/components/i18n";
 import { AppChrome } from "@/components/app-chrome";
 import { ServiceWorker } from "@/components/service-worker";
+import { OnlineSync } from "@/components/online-sync";
 
 // Tajawal — the Arabic + Latin pairing from the design system.
 const tajawal = Tajawal({
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Najda" },
   icons: {
     icon: [{ url: "/icons/icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/icons/icon-192.png" }],
+    apple: [{ url: "/icons/icon.svg", type: "image/svg+xml" }],
   },
 };
 
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <I18nProvider>
           <AppChrome>{children}</AppChrome>
           <ServiceWorker />
+          <OnlineSync />
         </I18nProvider>
       </body>
     </html>

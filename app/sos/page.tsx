@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { LocatorCard } from "@/components/locator-card";
 import { ManualPinMap } from "@/components/manual-pin-map-dynamic";
 import { EMERGENCY_TYPES } from "@/lib/emergency";
-import { shortPlusCode } from "@/lib/plus-code";
+import { encodePlusCode } from "@/lib/plus-code";
 import { subscribeGeo, stopWatch, setManualFix, startWatch } from "@/lib/geo-cache";
 import { queueOrCreateAlert } from "@/lib/dispatch-client";
 import type { AlertType } from "@/lib/types";
@@ -44,7 +44,7 @@ export default function SosPage() {
   // Effective location: live fix wins; otherwise the manual pin.
   const loc = fix ?? (manual ? { lat: manual.lat, lng: manual.lng, accuracy_m: null as number | null } : null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const code = useMemo(() => (loc ? shortPlusCode(loc.lat, loc.lng) : ""), [loc?.lat, loc?.lng]);
+  const code = useMemo(() => (loc ? encodePlusCode(loc.lat, loc.lng) : ""), [loc?.lat, loc?.lng]);
 
   async function send() {
     if (!type || !loc) return;
@@ -121,7 +121,7 @@ export default function SosPage() {
           <ManualPinMap initial={manual} onChange={(p) => setManual(p)} />
           {manual && (
             <p dir="ltr" className="tabular text-center text-locator font-bold text-ink-900">
-              {shortPlusCode(manual.lat, manual.lng)}
+              {encodePlusCode(manual.lat, manual.lng)}
             </p>
           )}
         </div>

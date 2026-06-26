@@ -37,6 +37,11 @@ the number that matters most.
 > **The system selected the correct nearest available responder in 6/6 cases.**
 > The `earthdistance` RPC's top pick matched an independent Haversine ground-truth
 > search every time. Nearest responder distances ranged 0.6–3.1 km.
+>
+> Honest read: the RPC and the ground truth use the **same distance model** over
+> the **same 5 seeded responders**, so 6/6 confirms the production ranking is
+> *consistent with* a great-circle search — it is **distance-formula parity, not a
+> test of routing robustness** under availability churn, ties, or a large pool.
 
 ### 3. System latency (this is *overhead*, not impact — see below)
 > Median **SOS→delivery 1.34 s** and **SOS→acknowledgment 1.45 s**
@@ -46,14 +51,14 @@ the number that matters most.
 
 **Raw rows:**
 
-| Run | Locator | Accuracy | Nearest responder | Dist | Ranking | SOS→delivery |
-|----:|---|---:|---|---:|:--:|---:|
-| 1 | `7HMQGFRX+C77` | 1.63 m | سالم المنصوري | 0.6 km | ✓ | 1.32 s |
-| 2 | `7HMQGF6C+XQ6` | 1.22 m | فاطمة الكعبي | 1.7 km | ✓ | 1.33 s |
-| 3 | `7HMQHG68+45Q` | 1.36 m | Imran Khan | 2.0 km | ✓ | 1.32 s |
-| 4 | `7HMQFGX3+G62` | 1.11 m | Aisha Rahman | 1.8 km | ✓ | 1.64 s |
-| 5 | `7HMQGFM6+F35` | 1.06 m | فاطمة الكعبي | 2.0 km | ✓ | 1.36 s |
-| 6 | `7HMQHFGQ+32H` | 0.41 m | Imran Khan | 3.1 km | ✓ | 1.40 s |
+| Run | Locator | Accuracy | Nearest responder | Dist | Ranking | SOS→delivery | SOS→ack |
+|----:|---|---:|---|---:|:--:|---:|---:|
+| 1 | `7HMQGFRX+C77` | 1.63 m | سالم المنصوري | 0.6 km | ✓ | 1.32 s | 1.43 s |
+| 2 | `7HMQGF6C+XQ6` | 1.22 m | فاطمة الكعبي | 1.7 km | ✓ | 1.33 s | 1.44 s |
+| 3 | `7HMQHG68+45Q` | 1.36 m | Imran Khan | 2.0 km | ✓ | 1.32 s | 1.43 s |
+| 4 | `7HMQFGX3+G62` | 1.11 m | Aisha Rahman | 1.8 km | ✓ | 1.64 s | 1.74 s |
+| 5 | `7HMQGFM6+F35` | 1.06 m | فاطمة الكعبي | 2.0 km | ✓ | 1.36 s | 1.46 s |
+| 6 | `7HMQHFGQ+32H` | 0.41 m | Imran Khan | 3.1 km | ✓ | 1.40 s | 1.50 s |
 
 ## The actual impact claim — proximity geometry (illustrative model)
 The latency numbers prove the pipeline is fast. The *impact* comes from **who** the

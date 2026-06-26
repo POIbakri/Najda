@@ -18,12 +18,16 @@ ranking over a range of pool sizes (200 iterations each, median reported).
 
 ## Result
 
-| Candidate responders | Median ranking time |
+| Candidate responders | Median ranking time (approx.) |
 |---|---|
-| 10 | 0.007 ms |
-| 100 | 0.014 ms |
-| 1,000 | 0.258 ms |
-| 10,000 | 3.505 ms |
+| 10 | ~0.01 ms |
+| 100 | ~0.01 ms |
+| 1,000 | ~0.3 ms |
+| 10,000 | ~3.5 ms |
+
+These are wall-clock micro-benchmarks, so the exact figures vary by machine and
+run — re-running reproduces the **order of magnitude and the linear scaling**, not
+the third decimal place. (Measured on the build sandbox CPU; `process.hrtime`.)
 
 ## Why this matters
 

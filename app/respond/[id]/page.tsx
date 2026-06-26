@@ -41,13 +41,15 @@ export default function ResponderAlertPage() {
   if (!alert) return <ErrorState onRetry={() => router.replace("/respond")} />;
 
   const requesterPhone = responders.find((r) => r.id === alert.requester_id)?.phone ?? null;
-  // Open to me if unclaimed, mine, or still held by the demo-responder autopilot
-  // (so a real second device can take over — the autopilot then stands down).
+  // You can't respond to your own alert. Otherwise it's open if unclaimed, mine,
+  // or still held by the demo-responder autopilot (so a real device can take over).
+  const isOwnAlert = Boolean(me?.id) && me?.id === alert.requester_id;
   const mineOrOpen =
-    !alert.accepted_by ||
-    alert.accepted_by === me?.id ||
-    alert.accepted_by.startsWith("demo-") ||
-    isSeedResponder(responders.find((r) => r.id === alert.accepted_by));
+    !isOwnAlert &&
+    (!alert.accepted_by ||
+      alert.accepted_by === me?.id ||
+      alert.accepted_by.startsWith("demo-") ||
+      isSeedResponder(responders.find((r) => r.id === alert.accepted_by)));
   const km =
     me?.home_lat != null ? Math.round(distanceKm(alert.lat, alert.lng, me.home_lat, me.home_lng!) * 10) / 10 : null;
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${alert.lat},${alert.lng}`;

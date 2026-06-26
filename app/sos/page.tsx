@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Stethoscope, Car, Flame, UserRound, CircleHelp, Loader2, Send, MapPinned } from "lucide-react";
+import { Stethoscope, Car, Flame, UserRound, CircleHelp, Loader2, Send, MapPinned, WifiOff } from "lucide-react";
 import { useI18n } from "@/components/i18n";
 import { Button } from "@/components/ui/button";
 import { LocatorCard } from "@/components/locator-card";
@@ -31,6 +31,7 @@ export default function SosPage() {
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState(false);
+  const [queued, setQueued] = useState(false);
 
   // Keep the warm fix flowing; ensure a watch is running even on direct nav.
   useEffect(() => {
@@ -63,11 +64,27 @@ export default function SosPage() {
         delivery: online ? "data" : "sms",
       });
       stopWatch();
-      router.push(`/status/${alert.id}`);
+      if (alert) router.push(`/status/${alert.id}`);
+      else setQueued(true); // offline + no backend: saved, will send on reconnect
     } catch {
       setSending(false);
       setSendError(true);
     }
+  }
+
+  // ── Queued offline (no backend reachable): saved, will send on reconnect ────
+  if (queued) {
+    return (
+      <div className="flex flex-col items-center gap-4 py-12 text-center">
+        <WifiOff className="size-14 text-amber-500" aria-hidden />
+        <h1 className="text-title font-bold text-ink-900">{t("status.queuedOffline")}</h1>
+        <p className="max-w-xs text-body text-ink-600">{t("status.queuedOfflineHint")}</p>
+        <p className="text-caption text-ink-600">{t("status.noResponderHint")}</p>
+        <Button size="block" onClick={() => router.replace("/")} className="mt-2 max-w-xs">
+          {t("common.back")}
+        </Button>
+      </div>
+    );
   }
 
   // ── Step 1: choose type ────────────────────────────────────────────────────

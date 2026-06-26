@@ -13,8 +13,10 @@ explicit about what we have **not** validated.
 
 ## Two kinds of evidence
 
-1. **Automated & reproducible now** — anyone can re-run these from the repo and
-   get the same numbers. No people required. See the scripts in [`/scripts`](../scripts).
+1. **Automated & reproducible now** — anyone can re-run these from the repo. The
+   accuracy and correctness numbers reproduce exactly; the timing numbers
+   reproduce to their order of magnitude (wall-clock varies by machine). No people
+   required. See the scripts in [`/scripts`](../scripts).
 2. **Field drill (human-run)** — the real-world timing study from `docs/EVIDENCE.md`
    needs 4–6 volunteers. The tooling is built (the coordinator dashboard computes
    medians live from the notification ledger); the numbers get pasted into

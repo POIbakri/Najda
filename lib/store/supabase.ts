@@ -161,7 +161,10 @@ export const supabaseStore: Store = {
     if (!id) return;
     const { data: me } = await db().from("profiles").select("*").eq("id", id).single();
     const p = me as Profile;
-    await db()
+    // First-accept-wins: the conditional update only matches while the alert is
+    // still searching, so a second responder racing to accept matches 0 rows and
+    // does NOT clobber the first. (Mirrors the demo store's claimable guard.)
+    const { data: updated } = await db()
       .from("alerts")
       .update({
         status: "accepted",
@@ -172,7 +175,10 @@ export const supabaseStore: Store = {
         accepted_at: nowIso(),
         eta_minutes: eta,
       })
-      .eq("id", alertId);
+      .eq("id", alertId)
+      .eq("status", "searching")
+      .select();
+    if (!updated || updated.length === 0) return; // someone else already accepted
     await db()
       .from("alert_responders")
       .update({ responded_at: nowIso(), eta_minutes: eta, status: "accepted" })
@@ -247,8 +253,9 @@ export const supabaseStore: Store = {
   async simulateNearestResponder(alertId: string) {
     const alert = await this.getAlert(alertId);
     if (!alert || alert.status !== "searching") return;
-    const { data: nearest } = await db().rpc("nearest_responders", { a_lat: alert.lat, a_lng: alert.lng, max_n: 1 });
-    const r = ((nearest as Profile[]) ?? [])[0];
+    const { data: nearest } = await db().rpc("nearest_responders", { a_lat: alert.lat, a_lng: alert.lng, max_n: 5 });
+    // never let the requester be dispatched to their own alert (self-rescue)
+    const r = ((nearest as Profile[]) ?? []).find((x) => x.id !== alert.requester_id);
     if (!r) return;
     const km = r.home_lat != null ? distanceKm(alert.lat, alert.lng, r.home_lat, r.home_lng!) : 3;
     const eta = etaMinutes(km);

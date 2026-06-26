@@ -10,6 +10,7 @@ import { LoadingState, ErrorState } from "@/components/states";
 import { demoAutopilot, isSeedResponder } from "@/lib/config";
 import { db } from "@/lib/store";
 import { STATUS_ORDER, STATUS_LABEL_KEY } from "@/lib/emergency";
+import { distanceKm, etaMinutes } from "@/lib/distance";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Alert, Profile } from "@/lib/types";
@@ -99,7 +100,14 @@ export default function StatusPage() {
   }
 
   const searching = alert.status === "searching";
-  const eta = alert.eta_minutes ?? null;
+  // Recompute ETA from the responder's current position so it counts down as they
+  // approach (rather than showing the frozen accept-time estimate). Falls back to
+  // the stored estimate before they're moving.
+  const liveEta =
+    alert.status === "en_route" && responderPoint
+      ? etaMinutes(distanceKm(alert.lat, alert.lng, responderPoint.lat, responderPoint.lng))
+      : (alert.eta_minutes ?? null);
+  const eta = liveEta;
 
   return (
     <div className="space-y-5 pt-2">

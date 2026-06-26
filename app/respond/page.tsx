@@ -77,10 +77,12 @@ export default function RespondPage() {
   const available = profile?.is_available ?? false;
   const home = profile?.home_lat != null ? { lat: profile.home_lat, lng: profile.home_lng! } : null;
 
-  const sorted = [...alerts].sort((a, b) => {
-    if (!home) return Date.parse(b.created_at) - Date.parse(a.created_at);
-    return distanceKm(a.lat, a.lng, home.lat, home.lng) - distanceKm(b.lat, b.lng, home.lat, home.lng);
-  });
+  const sorted = [...alerts]
+    .filter((a) => !profile || a.requester_id !== profile.id) // don't show me my own alert
+    .sort((a, b) => {
+      if (!home) return Date.parse(b.created_at) - Date.parse(a.created_at);
+      return distanceKm(a.lat, a.lng, home.lat, home.lng) - distanceKm(b.lat, b.lng, home.lat, home.lng);
+    });
 
   return (
     <div className="space-y-5 pt-2">

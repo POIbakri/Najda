@@ -28,6 +28,15 @@ export async function POST(req: Request) {
   const { data: alert } = await supabase.from("alerts").select("*").eq("id", alertId).maybeSingle<Alert>();
   if (!alert) return NextResponse.json({ ok: false, error: "alert not found" }, { status: 404 });
 
+  // Abuse guard: only dispatch for a fresh, still-searching alert. This limits an
+  // unauthenticated caller to (at most) re-notifying the already-selected
+  // responders of a genuine, recent alert. Production should additionally require
+  // a service-role context (see README "Security & production hardening").
+  const ageMs = Date.now() - Date.parse(alert.created_at);
+  if (alert.status !== "searching" || ageMs > 10 * 60 * 1000) {
+    return NextResponse.json({ ok: true, skipped: true, reason: "not a fresh searching alert" });
+  }
+
   const { data: ledger } = await supabase.from("alert_responders").select("*").eq("alert_id", alertId);
   const responders = (ledger as AlertResponder[]) ?? [];
   const ids = responders.map((r) => r.responder_id);

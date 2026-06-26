@@ -58,7 +58,7 @@ export default function RespondPage() {
         }
       }
       const saved = await db.saveProfile({
-        name: name.trim() || profile?.name || "مستجيب",
+        name: name.trim() || profile?.name || t("common.responder"),
         phone: phone.trim() || profile?.phone || "",
         is_responder: true,
         is_available: available,
@@ -112,19 +112,25 @@ export default function RespondPage() {
             type="button"
             role="switch"
             aria-checked={available}
+            aria-label={t("responder.availTitle")}
             disabled={busy}
             onClick={() => void becomeAvailable(!available)}
-            className={cn(
-              "relative h-9 w-16 shrink-0 rounded-full transition-colors",
-              available ? "bg-relief-600" : "bg-ink-900/20",
-            )}
+            // 56px tap-target floor; the 36px visual track lives inside the padded hit area
+            className="flex min-h-touch shrink-0 items-center justify-center px-2"
           >
             <span
               className={cn(
-                "absolute top-1 size-7 rounded-full bg-white shadow transition-all",
-                available ? "start-8" : "start-1",
+                "relative block h-9 w-16 rounded-full transition-colors",
+                available ? "bg-relief-600" : "bg-ink-900/20",
               )}
-            />
+            >
+              <span
+                className={cn(
+                  "absolute top-1 size-7 rounded-full bg-white shadow transition-all",
+                  available ? "start-8" : "start-1",
+                )}
+              />
+            </span>
           </button>
         </div>
       </Card>

@@ -41,7 +41,9 @@ export default function ResponderAlertPage() {
   if (!alert) return <ErrorState onRetry={() => router.replace("/respond")} />;
 
   const requesterPhone = responders.find((r) => r.id === alert.requester_id)?.phone ?? null;
-  const mineOrOpen = !alert.accepted_by || alert.accepted_by === me?.id;
+  // Open to me if unclaimed, mine, or still held by the demo-responder autopilot
+  // (so a real second device can take over — the autopilot then stands down).
+  const mineOrOpen = !alert.accepted_by || alert.accepted_by === me?.id || alert.accepted_by.startsWith("demo-");
   const km =
     me?.home_lat != null ? Math.round(distanceKm(alert.lat, alert.lng, me.home_lat, me.home_lng!) * 10) / 10 : null;
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${alert.lat},${alert.lng}`;

@@ -9,7 +9,8 @@ import { LocatorCard } from "@/components/locator-card";
 import { LoadingState, ErrorState } from "@/components/states";
 import { EMERGENCY_NUMBER } from "@/lib/config";
 import { db } from "@/lib/store";
-import { STATUS_ORDER } from "@/lib/emergency";
+import { STATUS_ORDER, STATUS_LABEL_KEY } from "@/lib/emergency";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Alert, Profile } from "@/lib/types";
 
@@ -174,19 +175,42 @@ export default function StatusPage() {
 }
 
 function StatusStepper({ status }: { status: Alert["status"] }) {
+  const { t } = useI18n();
   const current = STATUS_ORDER.indexOf(status);
   return (
-    <ol className="flex items-center gap-1" aria-label="progress">
+    <ol className="flex items-stretch gap-1.5" aria-label={t("a11y.progress")}>
       {STATUS_ORDER.map((s, i) => {
-        const done = i <= current;
+        const done = i < current;
+        const isCurrent = i === current;
+        // Non-colour cues: completed steps carry a check; the current step a ring.
+        // Colour reinforces but never carries the meaning alone.
         return (
-          <li key={s} className="flex flex-1 items-center gap-1">
+          <li
+            key={s}
+            className="flex flex-1 flex-col items-center gap-1"
+            aria-current={isCurrent ? "step" : undefined}
+            aria-label={`${t(STATUS_LABEL_KEY[s])} — ${isCurrent ? t("a11y.stepCurrent") : done ? t("a11y.stepDone") : ""}`}
+          >
             <span
               className={cn(
-                "h-2 flex-1 rounded-full transition-colors",
-                done ? (status === "searching" ? "bg-amber-500" : "bg-relief-600") : "bg-ink-900/15",
+                "h-1.5 w-full rounded-full transition-colors",
+                done || isCurrent ? (status === "searching" ? "bg-amber-500" : "bg-relief-600") : "bg-ink-900/15",
               )}
             />
+            <span aria-hidden className="flex h-4 items-center justify-center">
+              {done ? (
+                <Check className={cn("size-3.5", status === "searching" ? "text-amber-500" : "text-relief-600")} />
+              ) : isCurrent ? (
+                <span
+                  className={cn(
+                    "size-2.5 rounded-full ring-2",
+                    status === "searching" ? "bg-amber-500 ring-amber-500/30" : "bg-relief-600 ring-relief-600/30",
+                  )}
+                />
+              ) : (
+                <span className="size-2 rounded-full bg-ink-900/15" />
+              )}
+            </span>
           </li>
         );
       })}

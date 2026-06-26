@@ -186,7 +186,7 @@ function runAutopilot(alertId: string) {
     const alert = db.alerts.find((a) => a.id === alertId);
     if (!alert || alert.status !== "searching") return; // human took over
     const nearest = db.profiles
-      .filter((p) => p.is_responder && p.is_available && p.home_lat != null && p.id.startsWith("demo-"))
+      .filter((p) => p.is_responder && p.is_available && p.home_lat != null && p.home_lng != null && p.id.startsWith("demo-"))
       .sort(
         (a, b) =>
           distanceKm(alert.lat, alert.lng, a.home_lat!, a.home_lng!) -
@@ -369,6 +369,15 @@ export const demoStore: Store = {
     const me = db.profiles.find((p) => p.id === id);
     const alert = db.alerts.find((a) => a.id === alertId);
     if (!alert || !me) return;
+    // Don't clobber an alert a different human already claimed. A human MAY take
+    // over from the labelled demo-responder autopilot (accepted_by demo-*), which
+    // then stands down (its guards require accepted_by to start with "demo-").
+    const claimable =
+      alert.status === "searching" ||
+      alert.accepted_by == null ||
+      alert.accepted_by === me.id ||
+      alert.accepted_by.startsWith("demo-");
+    if (!claimable) return;
     alert.status = "accepted";
     alert.accepted_by = me.id;
     alert.accepted_by_name = me.name;

@@ -66,7 +66,7 @@ export default function OnboardingPage() {
           <Button size="block" onClick={() => setStep(1)}>
             {t("common.continue")}
           </Button>
-          <button onClick={finishSkip} className="text-caption text-ink-600 underline">
+          <button onClick={finishSkip} className="inline-flex min-h-touch items-center justify-center px-4 text-caption text-ink-600 underline">
             {t("onboarding.skip")}
           </button>
         </div>
@@ -143,7 +143,7 @@ export default function OnboardingPage() {
           <Button type="submit" size="block" disabled={saving}>
             {t("onboarding.start")}
           </Button>
-          <button type="button" onClick={finishSkip} className="block w-full text-center text-caption text-ink-600 underline">
+          <button type="button" onClick={finishSkip} className="min-h-touch w-full text-center text-caption text-ink-600 underline">
             {t("onboarding.skip")}
           </button>
         </form>

@@ -9,7 +9,7 @@ import { LocatorCard } from "@/components/locator-card";
 import { ManualPinMap } from "@/components/manual-pin-map-dynamic";
 import { EMERGENCY_TYPES } from "@/lib/emergency";
 import { encodePlusCode } from "@/lib/plus-code";
-import { subscribeGeo, stopWatch, setManualFix, startWatch } from "@/lib/geo-cache";
+import { subscribeGeo, stopWatch, startWatch } from "@/lib/geo-cache";
 import { queueOrCreateAlert } from "@/lib/dispatch-client";
 import type { AlertType } from "@/lib/types";
 import type { FixResult } from "@/lib/geolocation";
@@ -107,7 +107,7 @@ export default function SosPage() {
   // ── Step 2: locator + send ─────────────────────────────────────────────────
   return (
     <div className="space-y-5 pt-2">
-      <button onClick={() => setType(null)} className="text-caption text-ink-600 underline">
+      <button onClick={() => setType(null)} className="inline-flex min-h-touch items-center px-2 text-caption text-ink-600 underline">
         {t("common.back")}
       </button>
 
@@ -132,7 +132,7 @@ export default function SosPage() {
           <Loader2 className="size-8 animate-spin" aria-hidden />
           <p className="text-body">{t("locator.acquiring")}</p>
           <p className="text-caption">{t("locator.acquiringHint")}</p>
-          <button onClick={() => setShowManual(true)} className="mt-2 text-caption text-ink-900 underline">
+          <button onClick={() => setShowManual(true)} className="mt-2 inline-flex min-h-touch items-center px-3 text-caption text-ink-900 underline">
             {t("locator.manualPin")}
           </button>
         </div>
@@ -152,7 +152,7 @@ export default function SosPage() {
       )}
 
       {!fix && !showManual && !hasGeoError && (
-        <button onClick={() => setShowManual(true)} className="block w-full text-center text-caption text-ink-900 underline">
+        <button onClick={() => setShowManual(true)} className="min-h-touch w-full text-center text-caption text-ink-900 underline">
           {t("locator.manualPin")}
         </button>
       )}

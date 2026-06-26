@@ -11,11 +11,11 @@ const LANGS: { code: Language; label: string }[] = [
 ];
 
 export function LanguageSwitcher({ className }: { className?: string }) {
-  const { lang, setLang } = useI18n();
+  const { lang, setLang, t } = useI18n();
   return (
     <div
       role="group"
-      aria-label="Language"
+      aria-label={t("a11y.language")}
       className={cn("inline-flex items-center gap-1 rounded-full bg-sand-100 p-1", className)}
     >
       {LANGS.map((l) => {
@@ -26,8 +26,9 @@ export function LanguageSwitcher({ className }: { className?: string }) {
             type="button"
             onClick={() => setLang(l.code)}
             aria-pressed={active}
+            // 56px tap-target floor (accessibility); visual stays compact via flex centering
             className={cn(
-              "min-h-[40px] rounded-full px-3 text-caption font-bold transition-colors",
+              "flex min-h-touch items-center rounded-full px-3 text-caption font-bold transition-colors",
               active ? "bg-ink-900 text-sand-50" : "text-ink-600 hover:text-ink-900",
             )}
           >

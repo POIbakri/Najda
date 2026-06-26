@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "e2e": "node scripts/e2e-demo.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
@@ -31,6 +32,7 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.15",
+    "playwright": "1.56.1",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "twilio": "^5.3.4",

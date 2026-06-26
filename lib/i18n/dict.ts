@@ -124,6 +124,17 @@ export const ar = {
   "dashboard.reset": "إعادة الضبط",
 
   "footer.complements": "نجدة تُكمل خدمات الطوارئ (998) ولا تحل محلها.",
+
+  "a11y.language": "اللغة",
+  "a11y.progress": "تقدّم الحالة",
+  "a11y.map": "خريطة الموقع",
+  "a11y.manualPin": "تحديد الموقع يدويًا على الخريطة",
+  "a11y.requesterMarker": "موقع طالب المساعدة",
+  "a11y.responderMarker": "موقع المستجيب",
+  "a11y.locationCode": "رمز الموقع",
+  "a11y.stepDone": "مكتملة",
+  "a11y.stepCurrent": "الحالية",
+  "common.responder": "مستجيب",
 } as const;
 
 export type TKey = keyof typeof ar;
@@ -250,6 +261,17 @@ export const en: Record<TKey, string> = {
   "dashboard.reset": "Reset",
 
   "footer.complements": "Najda complements emergency services (998); it does not replace them.",
+
+  "a11y.language": "Language",
+  "a11y.progress": "Status progress",
+  "a11y.map": "Location map",
+  "a11y.manualPin": "Set location manually on the map",
+  "a11y.requesterMarker": "Requester location",
+  "a11y.responderMarker": "Responder location",
+  "a11y.locationCode": "Location code",
+  "a11y.stepDone": "completed",
+  "a11y.stepCurrent": "current",
+  "common.responder": "Responder",
 };
 
 // Urdu — partial stub (per spec). Missing keys fall back to English.

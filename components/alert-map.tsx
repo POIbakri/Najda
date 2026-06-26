@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useI18n } from "@/components/i18n";
 
 export interface MapPoint {
   lat: number;
@@ -38,6 +39,7 @@ const RELIEF = "#0E8C7A";
  * — the "watch them approach" moment of the Locator Card.
  */
 export function AlertMap({ requester, responder, accuracyM, compact, className }: AlertMapProps) {
+  const { t } = useI18n();
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const reqMarker = useRef<L.Marker | null>(null);
@@ -70,7 +72,7 @@ export function AlertMap({ requester, responder, accuracyM, compact, className }
     const map = mapRef.current;
     if (!map) return;
     if (!reqMarker.current) {
-      reqMarker.current = L.marker([requester.lat, requester.lng], { icon: dot(FLARE, "requester") }).addTo(map);
+      reqMarker.current = L.marker([requester.lat, requester.lng], { icon: dot(FLARE, t("a11y.requesterMarker")) }).addTo(map);
     } else {
       reqMarker.current.setLatLng([requester.lat, requester.lng]);
     }
@@ -95,7 +97,7 @@ export function AlertMap({ requester, responder, accuracyM, compact, className }
     if (!map) return;
     if (responder) {
       if (!resMarker.current) {
-        resMarker.current = L.marker([responder.lat, responder.lng], { icon: dot(RELIEF, "responder") }).addTo(map);
+        resMarker.current = L.marker([responder.lat, responder.lng], { icon: dot(RELIEF, t("a11y.responderMarker")) }).addTo(map);
       } else {
         resMarker.current.setLatLng([responder.lat, responder.lng]);
       }
@@ -103,7 +105,11 @@ export function AlertMap({ requester, responder, accuracyM, compact, className }
         [requester.lat, requester.lng],
         [responder.lat, responder.lng],
       ]);
-      map.flyToBounds(bounds.pad(0.4), { duration: 0.8, maxZoom: 15 });
+      // Respect prefers-reduced-motion: no fly animation when the user opts out.
+      const reduce =
+        typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) map.fitBounds(bounds.pad(0.4), { maxZoom: 15, animate: false });
+      else map.flyToBounds(bounds.pad(0.4), { duration: 0.8, maxZoom: 15 });
     } else if (resMarker.current) {
       resMarker.current.remove();
       resMarker.current = null;
@@ -115,7 +121,7 @@ export function AlertMap({ requester, responder, accuracyM, compact, className }
     <div
       ref={elRef}
       role="img"
-      aria-label="map"
+      aria-label={t("a11y.map")}
       className={className ?? (compact ? "h-40 w-full" : "h-64 w-full")}
     />
   );

@@ -35,7 +35,7 @@ export function LocatorCard({ plusCode, lat, lng, accuracyM, responder, children
         <p
           dir="ltr"
           className="tabular select-all text-center text-locator font-bold text-ink-900"
-          aria-label={`location code ${plusCode}`}
+          aria-label={`${t("a11y.locationCode")}: ${plusCode}`}
         >
           {plusCode}
         </p>

@@ -45,7 +45,7 @@
     coordinates ([`locator-accuracy.md`](./evidence/locator-accuracy.md)).
   - Nearest responder among 1,000 selected in **0.26 ms**
     ([`dispatch-latency.md`](./evidence/dispatch-latency.md)).
-  - Location delivered **with no data connection** via SMS fallback (demonstrated; see Evidence).
+  - Location delivered **with no data connection** via SMS fallback (states built and wired; live recording pending — see Evidence).
 - **Built for Al Qua'a specifically.** Address-free locator (the desert has no
   streets), community-responder model (neighbours are closer than ambulances),
   offline + SMS (patchy data), Arabic-first with English + Urdu (Arabic residents
@@ -71,8 +71,8 @@
 
 ## 4. Readiness — what's built  → Readiness (4)
 
-**Status: complete and working end to end, deployed as a PWA.** Every required
-state is built — not just the happy path.
+**Status: complete and working end to end — a working, installable PWA.** Every
+required state is built — not just the happy path.
 
 **Works now (verified — see [Verify](#how-to-run--verify)):**
 - Onboarding (language · role · location priming · name/phone), skippable
@@ -93,7 +93,7 @@ state is built — not just the happy path.
 **Real vs stubbed — we're precise:**
 | Capability | Status |
 |---|---|
-| Full demo path (SOS → resolved) | **Real**, verified in-browser (Chromium e2e) |
+| Full demo path (SOS → resolved) | **Real**, verified end-to-end in headless Chromium — `npm run e2e` ([`scripts/e2e-demo.mjs`](./scripts/e2e-demo.mjs)) |
 | Address-free Plus Code locator | **Real**, accuracy measured |
 | Nearest-responder ranking | **Real** (Haversine demo / `earthdistance` RPC) |
 | Realtime, offline shell, SMS-fallback states | **Real** |
@@ -152,6 +152,7 @@ npm run dev          # http://localhost:3000 — runs in demo mode, no keys need
 # or a production build:
 npm run build && npm start
 npm run typecheck    # strict TypeScript, no errors
+npm run e2e          # headless-Chromium check of the full demo path (needs: npx playwright install chromium)
 node scripts/measure-locator.mjs    # reproduce the accuracy evidence
 node scripts/measure-dispatch.mjs   # reproduce the routing-speed evidence
 ```

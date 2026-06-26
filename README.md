@@ -49,11 +49,19 @@ with your locator always on screen. It resolves with an outcome logged.
 
 A few claims I can actually back up (numbers and method in [`/evidence`](./evidence)):
 
-- The address-free locator is accurate to a **median of 1.18 m** against true
-  coordinates ([locator-accuracy.md](./evidence/locator-accuracy.md)).
-- On the live backend, an alert reaches the nearest responders in a **median of
-  1.31 s** (n = 6 self-test — [drill.md](./evidence/drill.md)).
-- The location goes out over **WhatsApp/SMS even with no data connection** — the
+- **The address-free locator is accurate to a median of ~1.2 m** (max 1.63 m in
+  the drill; 1.18 m median over 5,000 systematic points) against the true
+  coordinates. This is the on-thesis number — the national EMS provider names
+  *precise location* as its #1 obstacle ([locator-accuracy.md](./evidence/locator-accuracy.md)).
+- **The routing picks the correct nearest available responder** — 6/6 in the
+  self-test. In that test the nearest neighbour was **0.6–3.1 km away**, which by a
+  simple distance ÷ speed model is **~1–4 minutes to be on scene versus 30–60
+  minutes** for formal EMS to a remote village. That proximity gap — a neighbour
+  vs a distant ambulance — is the real impact; I mark it clearly as an illustrative
+  model, not a measured field result ([drill.md](./evidence/drill.md)).
+- The software itself adds only **~1.3 s of overhead** (SOS→delivery, server-timed)
+  — negligible against that baseline.
+- The location goes out over **WhatsApp first, SMS as a no-data fallback** — the
   dispatch path is verified live against Twilio.
 
 It's built for this place specifically: no addresses (so a spoken code replaces
@@ -125,26 +133,31 @@ formal dispatch so a 998 operator sees the same locator.
 *Speaks to: Falsifiability — the part most teams skip.*
 
 I measured what I could and I'm explicit about what I didn't. Everything below is
-reproducible from the repo.
+reproducible from the repo — a judge can re-run `npm run drill` and get their own
+numbers, which is the whole point.
 
-- **Locator accuracy:** median **1.18 m**, p95 1.79 m over 5,000 points.
-  `node scripts/measure-locator.mjs`.
-- **Controlled self-test (live backend):** n = 6 alerts from distinct GPS points
-  across the Al Qua'a area, run against the live Supabase + dispatch route with
-  server-stamped times — median **SOS→delivery 1.31 s**, **alert→acknowledgment
-  1.42 s**. Responders acknowledged on cue, so this isolates the *software's*
-  latency and excludes human reaction and travel — I say so plainly.
-  `npm run drill`.
+- **Location accuracy (the on-thesis metric):** median **~1.2 m** (1.17 m across
+  the 6 drill points; 1.18 m median / 1.79 m p95 over 5,000 systematic points)
+  against true coordinates. `npm run drill` / `node scripts/measure-locator.mjs`.
+- **Routing correctness:** the system picked the **correct nearest available
+  responder in 6/6** self-test cases (RPC vs an independent Haversine ground truth).
+- **Impact = proximity, not latency:** in the self-test the nearest neighbour was
+  **0.6–3.1 km away → ~1–4 min to scene** by a distance ÷ speed model, vs **30–60
+  min** for EMS to a remote village. Clearly an **illustrative model, not a measured
+  field result** — the field drill is what would prove it.
+- **System overhead (not impact):** median **SOS→delivery 1.34 s** /
+  **acknowledgment 1.45 s**, server-timed. This is software overhead with a session
+  acking on cue — *not* a human deciding to respond; I label it that way plainly.
 - **Routing speed:** **0.26 ms** to rank the nearest 5 of 1,000 responders.
-  `node scripts/measure-dispatch.mjs`.
-- **WhatsApp/SMS fallback:** the live dispatch route makes real Twilio calls; on
-  the trial account delivery is limited to verified numbers.
+- **WhatsApp/SMS fallback:** the live dispatch route made **real Twilio WhatsApp
+  calls** (`simulated:false`); trial delivery needs the recipient to join the sandbox.
 - **Baseline:** urban 7.5–8.5 min vs remote villages 30–60 min, cited with sources.
 
-I use a tiered approach and state the exact conditions at each tier (a 4–6-person
-field drill is the gold standard and is still pending; the self-test above is the
-"good enough" tier; accuracy + an SMS clip are the floor). Full detail, raw rows,
-and a frank **"what I did not validate"** list are in [`evidence/drill.md`](./evidence/drill.md).
+I use a tiered approach and state the exact conditions at each tier — and I'm plain
+that this is a **controlled self-test, not independent human responders**. The
+gold-standard 4–6-person field drill is still pending. Full detail, raw rows, the
+proximity model, and a frank **"what I did not validate"** list are in
+[`evidence/drill.md`](./evidence/drill.md).
 
 ## 7 · Running and verifying it
 *Speaks to: Documentation & completeness.*

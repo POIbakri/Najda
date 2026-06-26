@@ -100,10 +100,18 @@ export const supabaseStore: Store = {
   async createAlert(input: CreateAlertInput) {
     const me = getMeId();
     const plus = input.plus_code ?? encodePlusCode(input.lat, input.lng);
+    // Denormalise the requester's name so the responder screen can show it
+    // (parity with the demo store).
+    let requesterName: string | null = null;
+    if (me) {
+      const { data: prof } = await db().from("profiles").select("name").eq("id", me).maybeSingle();
+      requesterName = (prof as { name?: string } | null)?.name ?? null;
+    }
     const { data, error } = await db()
       .from("alerts")
       .insert({
         requester_id: me,
+        requester_name: requesterName,
         type: input.type,
         lat: input.lat,
         lng: input.lng,

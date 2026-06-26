@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { ALQUAA_CENTER } from "@/lib/config";
+import { useI18n } from "@/components/i18n";
 
 const FLARE = "#E4451F";
 
@@ -24,6 +25,7 @@ export function ManualPinMap({
   initial?: { lat: number; lng: number } | null;
   onChange: (p: { lat: number; lng: number }) => void;
 }) {
+  const { t } = useI18n();
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -68,5 +70,5 @@ export function ManualPinMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div ref={elRef} className="h-64 w-full rounded-card" role="application" aria-label="manual location pin" />;
+  return <div ref={elRef} className="h-64 w-full rounded-card" role="application" aria-label={t("a11y.manualPin")} />;
 }

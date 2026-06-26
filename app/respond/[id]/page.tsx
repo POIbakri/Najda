@@ -178,7 +178,7 @@ export default function ResponderAlertPage() {
               className="flex min-h-touch w-full items-center justify-center gap-2 rounded-card border-2 border-ink-900/15 bg-white text-body font-bold text-ink-900 focus-visible:outline focus-visible:outline-3"
             >
               <Phone className="size-5" aria-hidden />
-              {t("status.callResponder")}
+              {t("responder.callRequester")}
             </a>
           )}
           {/* Call 998 is always available via the persistent global bar below. */}

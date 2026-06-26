@@ -27,7 +27,7 @@ export function OfflineBanner() {
       className="flex items-center justify-center gap-2 bg-amber-500/20 px-4 py-2 text-caption font-bold text-ink-900"
     >
       <WifiOff className="size-4" aria-hidden />
-      {t("status.queuedOfflineHint")}
+      {t("common.offline")}
     </div>
   );
 }

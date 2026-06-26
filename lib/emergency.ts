@@ -42,6 +42,17 @@ export const STATUS_LABEL_KEY: Record<AlertStatus, TKey> = {
   cancelled: "status.cancelled",
 };
 
+// Short, variable-free status labels for list/badge contexts (the full
+// STATUS_LABEL_KEY strings contain {name}/{n} placeholders meant for headlines).
+export const STATUS_BADGE_KEY: Record<AlertStatus, TKey> = {
+  searching: "status.badge.searching",
+  accepted: "status.badge.accepted",
+  en_route: "status.badge.en_route",
+  on_scene: "status.badge.on_scene",
+  resolved: "status.badge.resolved",
+  cancelled: "status.badge.cancelled",
+};
+
 export const OUTCOME_LABEL_KEY: Record<AlertOutcome, TKey> = {
   helped: "responder.outcomeHelped",
   handed_to_ems: "responder.outcomeEms",

@@ -6,6 +6,16 @@ import type { Alert, AlertResponder, Profile } from "@/lib/types";
 
 export const runtime = "nodejs";
 
+// Arabic emergency-type labels for the responder message (the column stores the
+// English enum). Keep in sync with lib/i18n/dict.ts type.* keys.
+const TYPE_AR: Record<string, string> = {
+  medical: "حالة طبية",
+  accident: "حادث",
+  fire: "حريق",
+  person: "شخص في خطر",
+  other: "حالة طارئة",
+};
+
 // Triggered by the Supabase store on alert insert. Reads the nearest responders
 // and sends each a WhatsApp/SMS with the locator + a deep link. In demo mode the
 // client simulates this locally; this route is the production path.
@@ -63,7 +73,7 @@ async function dispatch(req: Request, alertId: string) {
       if (!phone) return Promise.resolve({ to: r.responder_id, ok: false, error: "no phone" });
       // Arabic-first message; the locator is the load-bearing line.
       const body =
-        `🚨 نجدة: حالة (${alert.type}) على بُعد ~${r.distance_km} كم.\n` +
+        `🚨 نجدة: ${TYPE_AR[alert.type] ?? alert.type} على بُعد ~${r.distance_km} كم.\n` +
         `رمز الموقع: ${alert.plus_code ?? `${alert.lat},${alert.lng}`}\n` +
         `استجب: ${link}\n` +
         `الطوارئ: ${EMERGENCY_NUMBER}`;

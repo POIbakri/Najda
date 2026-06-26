@@ -6,7 +6,7 @@ import { useI18n } from "@/components/i18n";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/store";
-import { TYPE_LABEL_KEY, STATUS_LABEL_KEY } from "@/lib/emergency";
+import { TYPE_LABEL_KEY, STATUS_BADGE_KEY } from "@/lib/emergency";
 import { shortPlusCode } from "@/lib/plus-code";
 import type { Alert, Metrics, Profile } from "@/lib/types";
 
@@ -66,7 +66,7 @@ export default function DashboardPage() {
                 <p dir="ltr" className="tabular text-caption text-ink-600">{shortPlusCode(a.lat, a.lng)}</p>
               </div>
               <span className="rounded-full bg-sand-100 px-3 py-1 text-caption font-bold text-ink-600">
-                {t(STATUS_LABEL_KEY[a.status])}
+                {t(STATUS_BADGE_KEY[a.status])}
               </span>
             </Card>
           ))

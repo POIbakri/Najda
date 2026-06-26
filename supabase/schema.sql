@@ -81,9 +81,15 @@ returns setof profiles language sql stable as $$
   limit max_n;
 $$;
 
--- realtime
-alter publication supabase_realtime add table alerts;
-alter publication supabase_realtime add table alert_responders;
+-- realtime (idempotent — safe to re-run)
+do $$ begin
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'alerts') then
+    alter publication supabase_realtime add table alerts;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'alert_responders') then
+    alter publication supabase_realtime add table alert_responders;
+  end if;
+end $$;
 
 -- RLS (hackathon-grade — tighten for production)
 alter table profiles enable row level security;

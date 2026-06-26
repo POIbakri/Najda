@@ -214,37 +214,48 @@ export const supabaseStore: Store = {
   },
 
   subscribeAlert(id, cb) {
-    void this.getAlert(id).then(cb).catch(logErr);
+    const refetch = () => void this.getAlert(id).then(cb).catch(logErr);
+    refetch();
     const ch = db()
       .channel(`alert:${id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "alerts", filter: `id=eq.${id}` }, () =>
-        void this.getAlert(id).then(cb).catch(logErr),
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "alerts", filter: `id=eq.${id}` }, refetch)
       .subscribe();
-    return () => void db().removeChannel(ch);
+    // Polling fallback: the status screen must update even if the realtime
+    // websocket can't connect (proxy/network). ~3s is fine for an emergency view.
+    const poll = setInterval(refetch, 3000);
+    return () => {
+      clearInterval(poll);
+      void db().removeChannel(ch);
+    };
   },
 
   subscribeActiveAlerts(cb) {
-    void this.listActiveAlerts().then(cb).catch(logErr);
+    const refetch = () => void this.listActiveAlerts().then(cb).catch(logErr);
+    refetch();
     const ch = db()
       .channel("alerts:active")
-      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () =>
-        void this.listActiveAlerts().then(cb).catch(logErr),
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, refetch)
       .subscribe();
-    return () => void db().removeChannel(ch);
+    const poll = setInterval(refetch, 5000);
+    return () => {
+      clearInterval(poll);
+      void db().removeChannel(ch);
+    };
   },
 
   subscribeMetrics(cb) {
-    void this.getMetrics().then(cb).catch(logErr);
+    const refetch = () => void this.getMetrics().then(cb).catch(logErr);
+    refetch();
     const ch = db()
       .channel("metrics")
-      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, () => void this.getMetrics().then(cb).catch(logErr))
-      .on("postgres_changes", { event: "*", schema: "public", table: "alert_responders" }, () =>
-        void this.getMetrics().then(cb).catch(logErr),
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "alerts" }, refetch)
+      .on("postgres_changes", { event: "*", schema: "public", table: "alert_responders" }, refetch)
       .subscribe();
-    return () => void db().removeChannel(ch);
+    const poll = setInterval(refetch, 6000);
+    return () => {
+      clearInterval(poll);
+      void db().removeChannel(ch);
+    };
   },
 
   // Labelled demo-responder autopilot for a lone judge (gated by the caller on

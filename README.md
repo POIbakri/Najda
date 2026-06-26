@@ -207,6 +207,10 @@ This is a hackathon build; we are explicit about what to tighten for production:
   requesters; production should add **OTP for responders**.
 - **Twilio dispatch** should move behind a service-role server context / Edge
   Function. Secrets live only in environment variables (never committed).
+- **Demo-responder autopilot** (`NEXT_PUBLIC_DEMO_AUTOPILOT`) is on so a lone
+  judge sees the full arc on the live URL. It is clearly labelled "مستجيب تجريبي"
+  in the UI and a real responder takes over from it. **Set it to `off` for a real
+  community deployment** so only real neighbours ever respond.
 
 ## License
 **MIT** — see [`LICENSE`](./LICENSE). Built for the Tatweer Hackathon 2026 — Al Qua'a.

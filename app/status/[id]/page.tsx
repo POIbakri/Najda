@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Phone, X, CheckCircle2, Loader2, MessageSquare } from "lucide-react";
 import { useI18n } from "@/components/i18n";
 import { Button } from "@/components/ui/button";
 import { LocatorCard } from "@/components/locator-card";
 import { LoadingState, ErrorState } from "@/components/states";
-import { EMERGENCY_NUMBER } from "@/lib/config";
+import { EMERGENCY_NUMBER, demoAutopilot, isSeedResponder } from "@/lib/config";
 import { db } from "@/lib/store";
 import { STATUS_ORDER, STATUS_LABEL_KEY } from "@/lib/emergency";
 import { Check } from "lucide-react";
@@ -34,6 +34,23 @@ export default function StatusPage() {
     return unsub;
   }, [id]);
 
+  // Supabase mode: if no human answers within ~6s, a labelled demo responder
+  // accepts so a lone judge still sees the full arc (demo store autopilots in
+  // createAlert; gated by demoAutopilot — off for real deployments).
+  const autopilotFired = useRef(false);
+  useEffect(() => {
+    if (db.mode !== "supabase" || !demoAutopilot) return;
+    if (!alert || alert.status !== "searching" || alert.accepted_by || autopilotFired.current) return;
+    const timer = setTimeout(async () => {
+      const cur = await db.getAlert(id);
+      if (cur && cur.status === "searching" && !cur.accepted_by && !autopilotFired.current) {
+        autopilotFired.current = true;
+        void db.simulateNearestResponder(id);
+      }
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [alert?.status, alert?.accepted_by, id]);
+
   // After ~18s with no responder, escalate the "call 998" prompt.
   useEffect(() => {
     if (alert?.status !== "searching") {
@@ -47,8 +64,9 @@ export default function StatusPage() {
   if (loading) return <LoadingState />;
   if (!alert) return <ErrorState onRetry={() => router.replace("/")} />;
 
-  const responderPhone = responders.find((r) => r.id === alert.accepted_by)?.phone;
-  const isDemoResponder = Boolean(alert.accepted_by?.startsWith("demo-"));
+  const acceptedResponder = responders.find((r) => r.id === alert.accepted_by);
+  const responderPhone = acceptedResponder?.phone;
+  const isDemoResponder = alert.accepted_by?.startsWith("demo-") || isSeedResponder(acceptedResponder);
   const responderPoint =
     alert.accepted_lat != null && alert.accepted_lng != null
       ? { lat: alert.accepted_lat, lng: alert.accepted_lng }

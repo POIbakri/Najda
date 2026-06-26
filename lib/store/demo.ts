@@ -450,6 +450,9 @@ export const demoStore: Store = {
     return onChange(fire);
   },
 
+  // Demo mode already runs the autopilot from createAlert; nothing to do here.
+  async simulateNearestResponder() {},
+
   async seedDemoData() {
     write(seedInto(read()));
   },

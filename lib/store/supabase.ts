@@ -10,7 +10,7 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { supabaseAnonKey, supabaseUrl } from "@/lib/config";
-import { distanceKm } from "@/lib/distance";
+import { distanceKm, etaMinutes } from "@/lib/distance";
 import { encodePlusCode } from "@/lib/plus-code";
 import type {
   Alert,
@@ -230,6 +230,67 @@ export const supabaseStore: Store = {
       )
       .subscribe();
     return () => void db().removeChannel(ch);
+  },
+
+  // Labelled demo-responder autopilot for a lone judge (gated by the caller on
+  // `demoAutopilot`). Accepts as the nearest seeded responder and approaches,
+  // standing down the moment a real responder takes over (accepted_by changes).
+  async simulateNearestResponder(alertId: string) {
+    const alert = await this.getAlert(alertId);
+    if (!alert || alert.status !== "searching") return;
+    const { data: nearest } = await db().rpc("nearest_responders", { a_lat: alert.lat, a_lng: alert.lng, max_n: 1 });
+    const r = ((nearest as Profile[]) ?? [])[0];
+    if (!r) return;
+    const km = r.home_lat != null ? distanceKm(alert.lat, alert.lng, r.home_lat, r.home_lng!) : 3;
+    const eta = etaMinutes(km);
+
+    // Conditional accept: only if still searching (a human may have just won).
+    await db()
+      .from("alerts")
+      .update({
+        status: "accepted",
+        accepted_by: r.id,
+        accepted_by_name: r.name,
+        accepted_lat: r.home_lat,
+        accepted_lng: r.home_lng,
+        accepted_at: nowIso(),
+        eta_minutes: eta,
+      })
+      .eq("id", alertId)
+      .eq("status", "searching");
+    await db()
+      .from("alert_responders")
+      .update({ responded_at: nowIso(), eta_minutes: eta, status: "accepted" })
+      .eq("alert_id", alertId)
+      .eq("responder_id", r.id);
+
+    // Advance through the arc, but only while this sim responder is still in control.
+    const controlled = async () => {
+      const a = await this.getAlert(alertId);
+      return a && a.accepted_by === r.id ? a : null;
+    };
+    const move = async (frac: number) => {
+      const a = await controlled();
+      if (!a || a.status !== "en_route" || a.accepted_lat == null || a.accepted_lng == null) return;
+      await db()
+        .from("alerts")
+        .update({ accepted_lat: a.accepted_lat + (a.lat - a.accepted_lat) * frac, accepted_lng: a.accepted_lng + (a.lng - a.accepted_lng) * frac })
+        .eq("id", alertId);
+    };
+    setTimeout(async () => {
+      const a = await controlled();
+      if (a?.status === "accepted") await db().from("alerts").update({ status: "en_route" }).eq("id", alertId).eq("status", "accepted");
+    }, 3000);
+    setTimeout(() => void move(0.5), 5000);
+    setTimeout(() => void move(0.5), 7000);
+    setTimeout(async () => {
+      const a = await controlled();
+      if (a?.status === "en_route") await db().from("alerts").update({ status: "on_scene", accepted_lat: a.lat, accepted_lng: a.lng }).eq("id", alertId).eq("status", "en_route");
+    }, 9000);
+    setTimeout(async () => {
+      const a = await controlled();
+      if (a?.status === "on_scene") await db().from("alerts").update({ status: "resolved", outcome: "helped", resolved_at: nowIso() }).eq("id", alertId).eq("status", "on_scene");
+    }, 13000);
   },
 
   // No-ops: real Supabase is seeded out-of-band (see supabase/seed.sql).

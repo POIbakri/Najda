@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { LocatorCard } from "@/components/locator-card";
 import { LoadingState, ErrorState } from "@/components/states";
 import { db } from "@/lib/store";
-import { EMERGENCY_NUMBER } from "@/lib/config";
+import { EMERGENCY_NUMBER, isSeedResponder } from "@/lib/config";
 import { TYPE_LABEL_KEY, OUTCOME_LABEL_KEY } from "@/lib/emergency";
 import { distanceKm } from "@/lib/distance";
 import type { Alert, AlertOutcome, Profile } from "@/lib/types";
@@ -43,7 +43,11 @@ export default function ResponderAlertPage() {
   const requesterPhone = responders.find((r) => r.id === alert.requester_id)?.phone ?? null;
   // Open to me if unclaimed, mine, or still held by the demo-responder autopilot
   // (so a real second device can take over — the autopilot then stands down).
-  const mineOrOpen = !alert.accepted_by || alert.accepted_by === me?.id || alert.accepted_by.startsWith("demo-");
+  const mineOrOpen =
+    !alert.accepted_by ||
+    alert.accepted_by === me?.id ||
+    alert.accepted_by.startsWith("demo-") ||
+    isSeedResponder(responders.find((r) => r.id === alert.accepted_by));
   const km =
     me?.home_lat != null ? Math.round(distanceKm(alert.lat, alert.lng, me.home_lat, me.home_lng!) * 10) / 10 : null;
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${alert.lat},${alert.lng}`;

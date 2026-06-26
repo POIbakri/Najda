@@ -37,7 +37,13 @@ export interface Store {
   subscribeActiveAlerts(cb: (a: Alert[]) => void): () => void;
   subscribeMetrics(cb: (m: Metrics) => void): () => void;
 
-  // demo affordances (no-op on supabase)
+  // demo affordances
   seedDemoData(): Promise<void>;
   resetDemoData(): Promise<void>;
+  /**
+   * Have a labelled seeded "demo responder" accept and approach, so a lone judge
+   * sees the full arc. No-op in demo mode (its createAlert already autopilots).
+   * Gated by the caller on `demoAutopilot`. A real responder can still take over.
+   */
+  simulateNearestResponder(alertId: string): Promise<void>;
 }

@@ -19,7 +19,7 @@ export const ar = {
   "common.min": "دقيقة",
   "common.meters": "م",
   "common.you": "أنت",
-  "common.demoBadge": "وضع العرض التجريبي",
+  "common.demoBadge": "تجريبي",
   "common.demoResponder": "مستجيب تجريبي",
 
   "nav.home": "الرئيسية",
@@ -156,7 +156,7 @@ export const en: Record<TKey, string> = {
   "common.min": "min",
   "common.meters": "m",
   "common.you": "You",
-  "common.demoBadge": "Demo mode",
+  "common.demoBadge": "Demo",
   "common.demoResponder": "Demo responder",
 
   "nav.home": "Home",

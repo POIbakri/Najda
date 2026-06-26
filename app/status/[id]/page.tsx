@@ -7,7 +7,7 @@ import { useI18n } from "@/components/i18n";
 import { Button } from "@/components/ui/button";
 import { LocatorCard } from "@/components/locator-card";
 import { LoadingState, ErrorState } from "@/components/states";
-import { EMERGENCY_NUMBER, demoAutopilot, isSeedResponder } from "@/lib/config";
+import { demoAutopilot, isSeedResponder } from "@/lib/config";
 import { db } from "@/lib/store";
 import { STATUS_ORDER, STATUS_LABEL_KEY } from "@/lib/emergency";
 import { Check } from "lucide-react";
@@ -171,13 +171,7 @@ export default function StatusPage() {
             {t("status.callResponder")}
           </a>
         )}
-        <a
-          href={`tel:${EMERGENCY_NUMBER}`}
-          className="flex min-h-touch w-full items-center justify-center gap-2 rounded-card border-2 border-flare-600/30 bg-white text-body font-bold text-flare-700 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2"
-        >
-          <Phone className="size-5" aria-hidden />
-          {t("common.callEms")}
-        </a>
+        {/* Call 998 is always available via the persistent global bar below. */}
         <Button
           variant="ghost"
           size="block"

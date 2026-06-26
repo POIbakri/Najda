@@ -24,18 +24,18 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
     <div className="mx-auto flex min-h-dvh max-w-md flex-col">
       <header className="sticky top-0 z-30 bg-sand-50/90 backdrop-blur-sm">
         <OfflineBanner />
-        <div className="flex items-center justify-between px-4 py-3">
-          <Link href="/" className="flex items-baseline gap-2" aria-label={t("app.name")}>
-            <span className="text-title font-bold text-ink-900">{t("app.name")}</span>
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+          <Link href="/" className="flex min-w-0 items-center gap-2" aria-label={t("app.name")}>
+            <span className="shrink-0 text-title font-bold text-ink-900">{t("app.name")}</span>
             {db.mode === "demo" && (
-              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-bold text-ink-600">
+              <span className="shrink-0 rounded-full bg-amber-500/20 px-2 py-0.5 text-[11px] font-bold text-ink-600">
                 {t("common.demoBadge")}
               </span>
             )}
           </Link>
-          <LanguageSwitcher />
+          <LanguageSwitcher className="shrink-0" />
         </div>
-        <nav aria-label={t("app.name")} className="flex gap-1 px-3 pb-2">
+        <nav aria-label={t("app.name")} className="flex gap-1 px-2 pb-2">
           {NAV.map(({ href, key, icon: Icon }) => {
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
@@ -44,12 +44,12 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-1.5 rounded-card px-2 py-2 text-caption font-bold transition-colors",
+                  "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-card px-1 py-1.5 text-[11px] font-bold transition-colors sm:flex-row sm:gap-1.5 sm:text-caption",
                   active ? "bg-sand-100 text-ink-900" : "text-ink-600 hover:bg-sand-100/60",
                 )}
               >
-                <Icon className="size-4" aria-hidden />
-                {t(key)}
+                <Icon className="size-4 shrink-0" aria-hidden />
+                <span className="max-w-full truncate">{t(key)}</span>
               </Link>
             );
           })}

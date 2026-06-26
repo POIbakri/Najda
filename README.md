@@ -10,34 +10,41 @@ alerts the nearest opted-in neighbour in seconds — for a place where there are
 street addresses and an ambulance is far away. It complements emergency services
 (998); it does not try to replace them.
 
-> **If you're judging this:** open the link above, tap the big **نجدة** button,
-> pick an emergency type, watch the location code lock in, and send. A nearby
-> responder accepts and you watch them come to you on the map. No login, no
-> install. (There's an **EN** toggle top-left if you prefer English.)
+> **Judging this? Fire a test alert in ~10 seconds — no login, no install.**
+> Open https://najda.vercel.app on your phone, tap the big red **نجدة** button,
+> pick a type, and send. A nearby responder accepts and you watch them come to you
+> on the map, through to resolved. (Solo? A clearly-labelled demo responder
+> answers automatically so you see the whole arc; **EN** toggle is top-left.)
 
 ---
 
-## 1 · The problem, and who I built this for
-*Speaks to: Impact, Relevance.*
+## 1 · Impact — a documented, pressing need
+*Speaks to: Impact (criterion 1, the first tiebreak) + Relevance (criterion 2).*
 
-Al Qua'a is a dispersed, camel-farming community about ninety minutes from Abu
-Dhabi. There are no street addresses, homes and farms are scattered, and the
-signal comes and goes. When someone collapses in the heat, two things go wrong at
-once: nobody can say *where* they are, and the nearest trained hands — a neighbour
-two farms over who could be there in four minutes — never hear about it.
+This isn't a benefit I imagined — it's one the emergency service itself has named.
+Urban UAE ambulance response runs about **7.5–8.5 minutes**, but remote villages
+report **30–60 minutes** ([cited sources](./evidence/baseline.md)). And the
+national EMS provider publicly names its biggest obstacles as **precise location**
+and **language barriers** — the two things an address-free locator and an
+Arabic/English/Urdu interface exist to fix. So the need is real, documented, and
+life-safety critical: a pressing problem an authority has already put on record.
 
-That's the gap Najda fills: the **first minutes**, before an ambulance can cover
-the distance. I built it for the person who needs help and can't describe their
-location, and for the neighbour who would help if they only knew.
+**Who it helps — and it's many.** The whole of a dispersed community like Al Qua'a
+(a camel-farming area ~90 minutes from Abu Dhabi with no street addresses,
+scattered farms, and patchy signal), and **especially the Urdu-speaking
+farm-labour population**, whom the language barrier hits hardest. Concretely: a
+worker who collapses in the heat, and the neighbour two farms over who could be
+there in minutes but never hears about it.
 
-The gap is real and documented. Urban UAE ambulance response runs about
-**7.5–8.5 minutes**, but remote villages report **30–60 minutes**
-([sources](./evidence/baseline.md)). The national EMS provider itself names
-*precise location* and *language barriers* as its biggest obstacles — which is
-exactly what an address-free locator and an Arabic/English/Urdu interface are for.
+**The mechanism that closes the gap.** Najda routes the alert to the *nearest
+neighbour* with a precise, spoken-aloud locator, in the user's language, even with
+no data. By a simple distance-÷-speed model a neighbour **0.6–3.1 km away is ~1–4
+minutes to the scene versus 30–60 minutes** for formal EMS — I mark that as an
+illustrative model, not a field measurement ([evidence](./evidence/drill.md)). It
+complements emergency services (998); it does not try to replace them.
 
-## 2 · What it does
-*Speaks to: Impact, Relevance.*
+## 2 · Relevance — what it does, squarely on Challenge 2
+*Speaks to: Relevance (criterion 2) + Impact (criterion 1).*
 
 You tap SOS; the phone starts a high-accuracy GPS fix immediately. You pick the
 type of emergency. Najda turns your coordinates into a short, human-readable
@@ -69,8 +76,8 @@ them), neighbours instead of distant ambulances, offline + messaging for patchy
 signal, Arabic first with English and Urdu for the farm-labour community, big tap
 targets and high contrast for outdoor use on a cheap phone.
 
-## 3 · Why it's feasible here
-*Speaks to: Feasibility.*
+## 3 · Feasibility — runs in a real rural setting, cheaply
+*Speaks to: Feasibility (criterion 3, the second tiebreak).*
 
 It's a web app (PWA), so it runs on any cheap Android in the browser — no app
 store. The shell loads offline, and the alert leads with WhatsApp/SMS, which
@@ -88,8 +95,8 @@ who runs the community WhatsApp group today.
 Honest constraints: it depends on neighbours opting in, it hasn't been tested in a
 real emergency, and the security model is hackathon-grade (see [below](#security--what-id-harden-for-production)).
 
-## 4 · What's actually built
-*Speaks to: Readiness.*
+## 4 · Readiness — deployed, working end to end, every state built
+*Speaks to: Readiness (criterion 4).*
 
 It's deployed and works end to end — and I built every state, not just the happy
 path: onboarding, the SOS flow, a live requester status screen with the responder
@@ -117,8 +124,8 @@ With no keys at all, Najda runs in a self-contained demo mode so the live URL ju
 works. With the Supabase + Twilio keys set (they are, in production), it uses the
 real backend — same code, same screens.
 
-## 5 · How it scales after the hackathon
-*Speaks to: Scalability.*
+## 5 · Scalability — replicate to any dispersed community
+*Speaks to: Scalability (criterion 5).*
 
 Nothing in the engine is specific to Al Qua'a. To serve another dispersed
 community you swap two things: the responder pool and the local facility data. It
@@ -129,8 +136,8 @@ engineering one. The path forward is more responder types (nurses, drivers, with
 skills already in the schema), more regions, and eventually opt-in integration with
 formal dispatch so a 998 operator sees the same locator.
 
-## 6 · Evidence
-*Speaks to: Falsifiability — the part most teams skip.*
+## 6 · Falsifiability & evidence — reproducible, with honest caveats
+*Speaks to: Falsifiability (criterion 6) — the part most teams skip.*
 
 I measured what I could and I'm explicit about what I didn't. Everything below is
 reproducible from the repo — a judge can re-run `npm run drill` and get their own
@@ -159,8 +166,8 @@ gold-standard 4–6-person field drill is still pending. Full detail, raw rows, 
 proximity model, and a frank **"what I did not validate"** list are in
 [`evidence/drill.md`](./evidence/drill.md).
 
-## 7 · Running and verifying it
-*Speaks to: Documentation & completeness.*
+## 7 · Docs & completeness — run & verify
+*Speaks to: Documentation & completeness (criterion 7).*
 
 ```bash
 npm install
@@ -194,14 +201,28 @@ Codes) · Twilio (WhatsApp/SMS) · Vercel.
 | `evidence/` | Measured + cited evidence, drill protocol |
 | `scripts/` | The measurement and test scripts |
 
-## 8 · The demo
-*Speaks to: Presentation — for the live round.*
+## 8 · Presentation & live demo
+*Speaks to: Presentation (criterion 8) — for the live round.*
 
 One scenario, in Arabic, on a phone: someone collapses in a date farm → SOS →
 medical → the locator locks → the nearest neighbour gets a WhatsApp → "أنا قادم ·
 ٤ دقائق" → the requester watches them approach → resolved. Then I show the SMS
 fallback in airplane mode and the dashboard medians, and I hand a judge a phone to
 raise their own test alert. (Video link coming at the top of this README.)
+
+**On stage I run the *real* two-phone flow** — one phone raises the alert, a second
+phone (a real responder) accepts and moves — with the labelled demo-responder
+autopilot only as a fallback if the room's network misbehaves, plus a backup video.
+
+Two questions I expect, and my answers:
+- *"Is the responder real or simulated?"* — Real. The two-phone flow is the live
+  demo; the autopilot is a clearly-labelled convenience ("مستجيب تجريبي") so a lone
+  judge sees the full arc, and it's off in any real deployment.
+- *"How is this different from a what3words or a Google Maps pin?"* — A pin still
+  needs a dispatcher and an ambulance 30–60 minutes away. Najda is the missing
+  layer: it *routes the precise location to the nearest neighbour* (1–4 minutes
+  away), in Arabic/Urdu, offline-tolerant. The address-free locator **and** the
+  community-responder engine **together** — not just location sharing.
 
 ---
 

@@ -5,7 +5,7 @@
 > area where formal help is far away. It **complements** emergency services
 > (998); it does **not** replace them.
 
-**Live demo:** _deploy pending — see [Deploy](#deploy) (runs with zero config in demo mode)_  ·  **Demo video (≤3 min):** _pending_  ·  **Challenge:** 2 — Reaching people quickly across a dispersed community
+**Live demo:** **https://najda.vercel.app**  ·  **Demo video (≤3 min):** _pending_  ·  **Challenge:** 2 — Reaching people quickly across a dispersed community
 
 > **Judges — try it in 20 seconds:** open the live URL → tap the big **نجدة**
 > button → pick an emergency type → watch the location code lock in → tap **أرسل

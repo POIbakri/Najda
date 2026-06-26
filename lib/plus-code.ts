@@ -1,6 +1,7 @@
 // Human-readable locator — the "no street addresses" answer.
 // open-location-code (Plus Codes), MIT, no API key.
 import { OpenLocationCode } from "open-location-code";
+import { ALQUAA_CENTER } from "@/lib/config";
 
 const olc = new OpenLocationCode();
 
@@ -12,19 +13,22 @@ export function encodePlusCode(lat: number, lng: number): string {
   return olc.encode(lat, lng, 11);
 }
 
+const REGION_PREFIX = encodePlusCode(ALQUAA_CENTER.lat, ALQUAA_CENTER.lng).slice(0, 4);
+
 /**
- * Short, shout-it-aloud locator relative to a reference point (defaults to the
- * coordinate itself, which yields the 4-char-grid + "+" form people can read to
- * a 998 operator, e.g. "VCXX+XX"). We display this prominently everywhere.
+ * Short, shout-it-aloud locator — the compact `XXXX+XX` form a person can read
+ * to a 998 operator or a neighbour. Within Al Qua'a every full code shares the
+ * same 4-char 100 km prefix (e.g. "7HMQ"), so we drop it and keep the
+ * locally-meaningful `XXXX+XX` part (recoverable with the region name). Points
+ * outside the region keep the full, globally-unique code to avoid ambiguity.
+ * The full code is always kept separately for navigation / SMS deep links.
  */
 export function shortPlusCode(lat: number, lng: number): string {
-  const full = encodePlusCode(lat, lng);
-  try {
-    // Shorten against the point's own area for a compact, locally-meaningful code.
-    return olc.shorten(full, lat, lng);
-  } catch {
-    return full;
-  }
+  const full = encodePlusCode(lat, lng); // e.g. "7HMQGFJR+C22"
+  const plus = full.indexOf("+");
+  if (plus !== 8 || full.slice(0, 4) !== REGION_PREFIX) return full;
+  // keep 4 local digits + "+" + 2 refinement digits → "GFJR+C2"
+  return `${full.slice(4, 8)}+${full.slice(plus + 1, plus + 3)}`;
 }
 
 export function isValidPlusCode(code: string): boolean {

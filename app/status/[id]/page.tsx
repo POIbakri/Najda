@@ -126,9 +126,11 @@ export default function StatusPage() {
             <p className="text-title font-bold text-ink-900">
               {alert.status === "on_scene"
                 ? t("status.on_scene", { name: alert.accepted_by_name ?? "" })
-                : t("status.accepted", { name: alert.accepted_by_name ?? "" })}
+                : alert.status === "en_route"
+                  ? t("status.en_route", { n: num(eta ?? 0) })
+                  : t("status.accepted", { name: alert.accepted_by_name ?? "" })}
             </p>
-            {eta != null && alert.status !== "on_scene" && (
+            {eta != null && alert.status === "accepted" && (
               <p className="text-body font-bold text-relief-600">{t("status.etaShort", { n: num(eta) })}</p>
             )}
             {isDemoResponder && (

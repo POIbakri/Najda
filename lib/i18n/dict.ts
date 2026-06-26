@@ -55,6 +55,8 @@ export const ar = {
 
   "locator.title": "رمز موقعك",
   "locator.subtitle": "اقرأ هذا الرمز للمسعف أو المستجيب — يحدّد مكانك بدقة بدون عنوان.",
+  "locator.fullCode": "الرمز الكامل",
+  "locator.region": "القعة",
   "locator.accuracy": "الدقة ±{n} م",
   "locator.acquiring": "جارٍ تحديد موقعك بدقة…",
   "locator.acquiringHint": "ابقَ في مكان مفتوح إن أمكن.",
@@ -67,6 +69,7 @@ export const ar = {
   "locator.voiceSaved": "تم حفظ الرسالة الصوتية",
   "locator.noteLabel": "ملاحظة (اختياري)",
   "locator.notePlaceholder": "صف الحالة بإيجاز",
+  "locator.sendFailed": "تعذّر إرسال النجدة. حاول مرة أخرى — وإن كانت الحالة طارئة اتصل بـ ٩٩٨ الآن.",
 
   "status.searching": "جارٍ البحث عن مستجيب قريب…",
   "status.searchingHint": "نُنبّه أقرب المستجيبين المتاحين الآن.",
@@ -192,6 +195,8 @@ export const en: Record<TKey, string> = {
 
   "locator.title": "Your location code",
   "locator.subtitle": "Read this code to a paramedic or responder — it pinpoints you with no street address.",
+  "locator.fullCode": "Full code",
+  "locator.region": "Al Qua'a",
   "locator.accuracy": "Accuracy ±{n} m",
   "locator.acquiring": "Pinpointing your location…",
   "locator.acquiringHint": "Stay in the open if you can.",
@@ -204,6 +209,7 @@ export const en: Record<TKey, string> = {
   "locator.voiceSaved": "Voice note saved",
   "locator.noteLabel": "Note (optional)",
   "locator.notePlaceholder": "Briefly describe the situation",
+  "locator.sendFailed": "Couldn't send the alert. Try again — and if this is an emergency, call 998 now.",
 
   "status.searching": "Finding a nearby responder…",
   "status.searchingHint": "We're alerting the nearest available responders now.",

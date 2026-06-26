@@ -10,6 +10,7 @@ import { EmptyState, LoadingState } from "@/components/states";
 import { db } from "@/lib/store";
 import { TYPE_LABEL_KEY } from "@/lib/emergency";
 import { distanceKm } from "@/lib/distance";
+import { shortPlusCode } from "@/lib/plus-code";
 import { getFix } from "@/lib/geolocation";
 import { cn } from "@/lib/utils";
 import type { Alert, AlertType, Profile } from "@/lib/types";
@@ -154,7 +155,7 @@ export default function RespondPage() {
                       {km != null && <span className="text-ink-600"> · {t("responder.distanceAway", { n: num(km) })}</span>}
                     </p>
                     <p dir="ltr" className="tabular text-caption text-ink-600">
-                      {a.plus_code}
+                      {shortPlusCode(a.lat, a.lng)}
                     </p>
                   </div>
                   <ChevronLeft className="size-5 text-ink-600 rtl:rotate-180" aria-hidden />

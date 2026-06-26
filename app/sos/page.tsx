@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { LocatorCard } from "@/components/locator-card";
 import { ManualPinMap } from "@/components/manual-pin-map-dynamic";
 import { EMERGENCY_TYPES } from "@/lib/emergency";
-import { encodePlusCode } from "@/lib/plus-code";
+import { encodePlusCode, shortPlusCode } from "@/lib/plus-code";
 import { subscribeGeo, stopWatch, startWatch } from "@/lib/geo-cache";
 import { queueOrCreateAlert } from "@/lib/dispatch-client";
 import type { AlertType } from "@/lib/types";
@@ -30,6 +30,7 @@ export default function SosPage() {
   const [showManual, setShowManual] = useState(false);
   const [note, setNote] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(false);
 
   // Keep the warm fix flowing; ensure a watch is running even on direct nav.
   useEffect(() => {
@@ -49,6 +50,7 @@ export default function SosPage() {
   async function send() {
     if (!type || !loc) return;
     setSending(true);
+    setSendError(false);
     try {
       const online = typeof navigator === "undefined" || navigator.onLine;
       const alert = await queueOrCreateAlert({
@@ -64,6 +66,7 @@ export default function SosPage() {
       router.push(`/status/${alert.id}`);
     } catch {
       setSending(false);
+      setSendError(true);
     }
   }
 
@@ -120,8 +123,8 @@ export default function SosPage() {
           </div>
           <ManualPinMap initial={manual} onChange={(p) => setManual(p)} />
           {manual && (
-            <p dir="ltr" className="tabular text-center text-locator font-bold text-ink-900">
-              {encodePlusCode(manual.lat, manual.lng)}
+            <p dir="ltr" className="tabular break-all text-center font-bold leading-tight text-ink-900 text-[clamp(24px,8vw,30px)] tracking-[0.08em]">
+              {shortPlusCode(manual.lat, manual.lng)}
             </p>
           )}
         </div>
@@ -155,6 +158,12 @@ export default function SosPage() {
         <button onClick={() => setShowManual(true)} className="min-h-touch w-full text-center text-caption text-ink-900 underline">
           {t("locator.manualPin")}
         </button>
+      )}
+
+      {sendError && (
+        <p role="alert" className="rounded-card bg-flare-600/10 p-3 text-center text-body font-bold text-flare-700">
+          {t("locator.sendFailed")}
+        </p>
       )}
 
       <Button variant="flare" size="blockLg" onClick={send} disabled={!loc || sending}>

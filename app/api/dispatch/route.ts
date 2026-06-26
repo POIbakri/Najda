@@ -23,9 +23,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, simulated: true, reason: "no-supabase" });
   }
 
+  try {
+    return await dispatch(req, alertId);
+  } catch (e) {
+    console.error("dispatch failed", e);
+    return NextResponse.json({ ok: false, error: "dispatch failed" }, { status: 500 });
+  }
+}
+
+async function dispatch(req: Request, alertId: string) {
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  const { data: alert } = await supabase.from("alerts").select("*").eq("id", alertId).maybeSingle<Alert>();
+  const { data: alert, error: alertErr } = await supabase.from("alerts").select("*").eq("id", alertId).maybeSingle<Alert>();
+  if (alertErr) throw alertErr;
   if (!alert) return NextResponse.json({ ok: false, error: "alert not found" }, { status: 404 });
 
   // Abuse guard: only dispatch for a fresh, still-searching alert. This limits an

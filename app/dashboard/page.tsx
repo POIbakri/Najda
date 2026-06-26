@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { db } from "@/lib/store";
 import { TYPE_LABEL_KEY, STATUS_LABEL_KEY } from "@/lib/emergency";
+import { shortPlusCode } from "@/lib/plus-code";
 import type { Alert, Metrics, Profile } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -60,7 +61,7 @@ export default function DashboardPage() {
             <Card key={a.id} className="flex items-center justify-between gap-3 bg-white py-3">
               <div>
                 <p className="text-body font-bold text-ink-900">{t(TYPE_LABEL_KEY[a.type])}</p>
-                <p dir="ltr" className="tabular text-caption text-ink-600">{a.plus_code}</p>
+                <p dir="ltr" className="tabular text-caption text-ink-600">{shortPlusCode(a.lat, a.lng)}</p>
               </div>
               <span className="rounded-full bg-sand-100 px-3 py-1 text-caption font-bold text-ink-600">
                 {t(STATUS_LABEL_KEY[a.status])}
@@ -72,7 +73,7 @@ export default function DashboardPage() {
 
       {/* demo controls */}
       {db.mode === "demo" && (
-        <div className="flex gap-2 pt-2">
+        <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-2">
           <Button variant="outline" size="block" onClick={() => void db.seedDemoData()}>
             {t("dashboard.seedDemo")}
           </Button>

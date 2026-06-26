@@ -79,7 +79,7 @@ export default function OnboardingPage() {
             <p className="text-caption text-ink-600">{t("onboarding.roleHint")}</p>
           </div>
           <RoleCard
-            icon={<LifeBuoy className="size-6 text-flare-600" aria-hidden />}
+            icon={<LifeBuoy className="size-6 text-ink-900" aria-hidden />}
             title={t("onboarding.roleNeedHelp")}
             desc={t("onboarding.roleNeedHelp.desc")}
             checked={needHelp}
@@ -100,7 +100,7 @@ export default function OnboardingPage() {
 
       {step === 2 && (
         <div className="space-y-6 text-center">
-          <MapPin className="mx-auto size-12 text-flare-600" aria-hidden />
+          <MapPin className="mx-auto size-12 text-relief-600" aria-hidden />
           <h1 className="text-title font-bold">{t("onboarding.permTitle")}</h1>
           <p className="mx-auto max-w-sm text-body text-ink-600">{t("onboarding.permBody")}</p>
           <Button size="block" onClick={() => setStep(3)}>

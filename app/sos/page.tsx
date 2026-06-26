@@ -88,7 +88,7 @@ export default function SosPage() {
           ) : null}
         </p>
         <div className="grid grid-cols-1 gap-3">
-          {EMERGENCY_TYPES.map(({ type: ty, labelKey, icon }) => {
+          {EMERGENCY_TYPES.map(({ type: ty, labelKey, icon, color }) => {
             const Icon = ICONS[icon];
             return (
               <button
@@ -97,7 +97,7 @@ export default function SosPage() {
                 onClick={() => setType(ty)}
                 className="flex min-h-touch items-center gap-4 rounded-card bg-sand-100 px-5 py-4 text-start text-body font-bold text-ink-900 shadow-soft transition-transform active:scale-[0.99] hover:bg-white focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2"
               >
-                <Icon className="size-7 text-flare-600" aria-hidden />
+                <Icon className={`size-7 ${color}`} aria-hidden />
                 {t(labelKey)}
               </button>
             );

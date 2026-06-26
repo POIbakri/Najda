@@ -120,7 +120,8 @@ export const supabaseStore: Store = {
 
     // Rank nearest responders via the RPC, write the ledger, fire dispatch.
     const { data: nearest } = await db().rpc("nearest_responders", { a_lat: alert.lat, a_lng: alert.lng, max_n: 5 });
-    const rows = ((nearest as Profile[]) ?? []).map((p) => ({
+    // never notify the requester about their own alert (parity with the demo store)
+    const rows = ((nearest as Profile[]) ?? []).filter((p) => p.id !== me).map((p) => ({
       alert_id: alert.id,
       responder_id: p.id,
       responder_name: p.name,

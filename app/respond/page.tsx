@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState, LoadingState } from "@/components/states";
 import { db } from "@/lib/store";
-import { TYPE_LABEL_KEY } from "@/lib/emergency";
+import { TYPE_LABEL_KEY, TYPE_COLOR } from "@/lib/emergency";
 import { distanceKm } from "@/lib/distance";
 import { shortPlusCode } from "@/lib/plus-code";
 import { getFix } from "@/lib/geolocation";
@@ -148,7 +148,7 @@ export default function RespondPage() {
             return (
               <Link key={a.id} href={`/respond/${a.id}`} className="block">
                 <Card className="flex items-center gap-4 bg-white transition-transform active:scale-[0.99]">
-                  <Icon className="size-7 shrink-0 text-flare-600" aria-hidden />
+                  <Icon className={`size-7 shrink-0 ${TYPE_COLOR[a.type]}`} aria-hidden />
                   <div className="flex-1">
                     <p className="text-body font-bold text-ink-900">
                       {t(TYPE_LABEL_KEY[a.type])}

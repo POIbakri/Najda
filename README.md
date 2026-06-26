@@ -43,6 +43,8 @@
 - **Testable impact claims (measured — see [`/evidence`](./evidence)):**
   - Address-free locator accurate to a **median 1.18 m** (max 2.1 m) vs true
     coordinates ([`locator-accuracy.md`](./evidence/locator-accuracy.md)).
+  - Alert reaches the nearest responders in a **median 1.31 s** over a real
+    network (n = 6 self-test on the live backend — [`drill.md`](./evidence/drill.md)).
   - Nearest responder among 1,000 selected in **0.26 ms**
     ([`dispatch-latency.md`](./evidence/dispatch-latency.md)).
   - Location delivered **with no data connection** via SMS fallback (states built and wired; live recording pending — see Evidence).
@@ -130,14 +132,21 @@ we have **not** validated. Full detail in [`/evidence`](./evidence).
   max 2.1 m over 5,000 points. Re-run: `node scripts/measure-locator.mjs`.
 - **Routing speed (automated, reproducible):** **0.26 ms** to rank the nearest 5
   of 1,000 responders. Re-run: `node scripts/measure-dispatch.mjs`.
+- **Controlled self-test (live backend, reproducible):** **n = 6** alerts from
+  distinct GPS points across the Al Qua'a area, run against the live Supabase +
+  `/api/dispatch`, server-timestamped — median **SOS→delivery 1.31 s**, median
+  **alert→acknowledgment 1.42 s** (responders acting on cue; isolates software
+  latency, excludes human reaction/travel). Re-run: `node scripts/drill-selftest.mjs`.
+  Full conditions + raw rows: [`evidence/drill.md`](./evidence/drill.md).
 - **SMS/offline fallback:** the app shows **"Sent via SMS"** and queues offline
-  with no data connection; with Twilio keys, `/api/dispatch` sends a real
-  WhatsApp/SMS carrying the locator + a deep link.
+  with no data connection; `/api/dispatch` makes **real Twilio calls** (verified
+  live, `simulated:false`) carrying the locator + a deep link.
 - **Baseline (cited):** urban **7.5–8.5 min** vs remote villages **30–60 min**
   ([sources](./evidence/baseline.md)); Najda compresses the first-minutes window.
-- **Field drill (human-run, tooling built, results pending):** the `/dashboard`
-  computes SOS→delivery, alert→ack, and GPS-accuracy medians live from the
-  notification ledger; protocol + table in [`evidence/drill.md`](./evidence/drill.md).
+- **Tiered evidence + field drill:** we state exact test conditions at every tier
+  (best = 4–6-person field drill, pending; good-enough = the self-test above; floor
+  = accuracy + SMS clip). The `/dashboard` computes the same medians live from the
+  ledger. See [`evidence/drill.md`](./evidence/drill.md).
 - **What we did NOT validate** (stated plainly because it makes the claims
   falsifiable): not tested in a real emergency; depends on responder adoption;
   remote-village figures are from comparable UAE areas, not Al Qua'a specifically;

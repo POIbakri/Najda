@@ -8,6 +8,12 @@ Next.js 14 (App Router, TypeScript) PWA · Tailwind (RTL) · shadcn/ui · Supaba
 **Auth:** frictionless for requesters — store name + phone on first launch in a `profiles` row; **no OTP wall in front of calling for help**. OTP for responders is the production path: note it in the README, skip it for the build to save time. Use the Supabase anon key client-side with the RLS policies below; use a server context (Edge Function / API route with service role) for the Twilio dispatch.
 
 ## Supabase schema (apply this)
+> **Canonical, app-matching schema:** [`supabase/schema.sql`](../supabase/schema.sql)
+> (or the combined [`supabase/setup.sql`](../supabase/setup.sql) = schema + seed).
+> It extends the outline below with the columns the app actually reads/writes
+> (accuracy, note, delivery channel, denormalised names, responder location, ETA)
+> and drops the unused `voice_note_url`. Apply that file; the block below is the
+> conceptual outline.
 ```sql
 create extension if not exists "uuid-ossp";
 create extension if not exists cube;

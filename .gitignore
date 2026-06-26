@@ -34,3 +34,7 @@ yarn-error.log*
 # editor
 .idea
 .vscode
+
+# env files (Vercel CLI adds this) — but keep the committed example
+.env*
+!.env.example

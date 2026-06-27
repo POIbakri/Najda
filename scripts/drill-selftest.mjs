@@ -8,7 +8,10 @@
 //      cell centre (what a responder/operator navigates to), measure the error.
 //   2. Ranking correctness   — does the earthdistance `nearest_responders` RPC pick
 //      the SAME nearest available responder as a ground-truth Haversine search?
-//   3. System latency        — server-stamped SOS→delivery and SOS→acknowledgment.
+//   3. System latency        — SOS→delivery is server-to-server (created_at and
+//      notified_at are both DB now() defaults). SOS→acknowledgment uses the
+//      script's own clock for accepted_at, so it's subject to client/DB skew —
+//      we label it that way rather than call it "server-stamped".
 //
 // IMPORTANT framing: the latency numbers are SYSTEM OVERHEAD. Acknowledgment here
 // is a controlled session acking on cue — NOT an independent human responder — so
@@ -71,7 +74,7 @@ for (let i = 0; i < POINTS.length; i++) {
   const nearestKm = trueNearest ? haversineM(p.lat, p.lng, trueNearest.home_lat, trueNearest.home_lng) / 1000 : null;
 
   // 3) latency: write ledger (delivery) then acknowledge (on cue)
-  const ledger = nearest.length ? curl("POST", "/rest/v1/alert_responders", nearest.map((r)=>({alert_id:alert.id,responder_id:r.id,responder_name:r.name,channel:"whatsapp"}))) : [];
+  const ledger = nearest.length ? curl("POST", "/rest/v1/alert_responders", nearest.map((r)=>({alert_id:alert.id,responder_id:r.id,responder_name:r.name,distance_km:+(haversineM(p.lat,p.lng,r.home_lat,r.home_lng)/1000).toFixed(2),channel:"whatsapp"}))) : [];
   const firstNotified = ledger.length ? Math.min(...ledger.map((l)=>Date.parse(l.notified_at))) : null;
   curl("PATCH", `/rest/v1/alerts?id=eq.${alert.id}&status=eq.searching`, { status: "accepted", accepted_by: rpcNearest?.id, accepted_by_name: rpcNearest?.name, accepted_at: new Date().toISOString(), eta_minutes: 4 });
   const got = curl("GET", `/rest/v1/alerts?id=eq.${alert.id}&select=created_at,accepted_at`)[0];
@@ -92,7 +95,7 @@ let dispatch = null;
 if (DISPATCH) {
   const p = POINTS[0];
   const a = curl("POST", "/rest/v1/alerts", { type: "accident", lat: p.lat, lng: p.lng, plus_code: olc.encode(p.lat,p.lng,11), accuracy_m: 9, status: "searching", delivery: "data" })[0];
-  if (responders.length) curl("POST", "/rest/v1/alert_responders", responders.slice(0,4).map((r)=>({alert_id:a.id,responder_id:r.id,responder_name:r.name,channel:"whatsapp"})));
+  if (responders.length) curl("POST", "/rest/v1/alert_responders", responders.slice(0,4).map((r)=>({alert_id:a.id,responder_id:r.id,responder_name:r.name,distance_km:+(haversineM(p.lat,p.lng,r.home_lat,r.home_lng)/1000).toFixed(2),channel:"whatsapp"})));
   try { dispatch = JSON.parse(execSync(`curl -s -X POST -H "content-type: application/json" --data '{"alertId":"${a.id}"}' "${DISPATCH}"`, { encoding: "utf8" })); } catch (e) { dispatch = { error: String(e) }; }
   curl("PATCH", `/rest/v1/alerts?id=eq.${a.id}`, { status: "cancelled" });
 }

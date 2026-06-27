@@ -41,15 +41,20 @@ export function ManualPinMap({
 
     const marker = L.marker([start.lat, start.lng], { icon: dot(), draggable: true }).addTo(map);
     markerRef.current = marker;
-    onChange({ lat: start.lat, lng: start.lng });
+    // Do NOT pre-arm Send with the untouched default centroid — the user must
+    // drag/tap to confirm their real location first (an emergency dispatched to a
+    // placeholder centroid is worse than none). If we were handed an explicit
+    // `initial`, that's a real prior pick, so honor it immediately.
+    if (initial) onChange({ lat: initial.lat, lng: initial.lng });
 
     marker.on("dragend", () => {
       const { lat, lng } = marker.getLatLng();
       onChange({ lat, lng });
     });
     map.on("click", (e: L.LeafletMouseEvent) => {
-      marker.setLatLng(e.latlng);
-      onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
+      const { lat, lng } = e.latlng.wrap(); // normalize across the antimeridian
+      marker.setLatLng([lat, lng]);
+      onChange({ lat, lng });
     });
 
     mapRef.current = map;

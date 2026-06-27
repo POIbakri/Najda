@@ -3,7 +3,10 @@
 // offline); cache-first for same-origin static assets; OSM tiles cached at
 // runtime with a small cap so the map still draws on a dropped signal.
 
-const VERSION = "najda-v1";
+// Version comes from the registration URL (/sw.js?v=<build>), so a new deploy
+// changes the cache names and the install/activate lifecycle purges the old shell.
+const BUILD = new URL(self.location.href).searchParams.get("v") || "v1";
+const VERSION = `najda-${BUILD}`;
 const SHELL = `${VERSION}-shell`;
 const STATIC = `${VERSION}-static`;
 const TILES = `${VERSION}-tiles`;
@@ -63,8 +66,12 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(SHELL).then((c) => c.put(request, copy)).catch(() => {});
+          // Only persist a healthy shell — never let a transient 404/500 HTML page
+          // on /sos or /status/[id] poison the offline fallback.
+          if (res.ok && res.type === "basic") {
+            const copy = res.clone();
+            caches.open(SHELL).then((c) => c.put(request, copy)).catch(() => {});
+          }
           return res;
         })
         .catch(async () => (await caches.match(request)) || (await caches.match("/")) || Response.error()),

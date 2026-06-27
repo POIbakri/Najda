@@ -2,18 +2,30 @@
 // open-location-code (Plus Codes), MIT, no API key.
 import { OpenLocationCode } from "open-location-code";
 import { ALQUAA_CENTER } from "@/lib/config";
+import { isValidCoord } from "@/lib/distance";
 
 const olc = new OpenLocationCode();
 
 /**
  * Full Plus Code for a coordinate, e.g. "7HVCXXXX+XX".
  * 11 digits ≈ 3m resolution — appropriate for pinpointing a person.
+ * Returns "" for invalid coordinates: open-location-code does NOT throw on
+ * NaN/out-of-range input — it confidently encodes garbage to a valid-looking
+ * code — so we guard here rather than display a wrong-but-plausible locator.
  */
 export function encodePlusCode(lat: number, lng: number): string {
+  if (!isValidCoord(lat, lng)) return "";
   return olc.encode(lat, lng, 11);
 }
 
-const REGION_PREFIX = encodePlusCode(ALQUAA_CENTER.lat, ALQUAA_CENTER.lng).slice(0, 4);
+const REGION_PREFIX = olc.encode(ALQUAA_CENTER.lat, ALQUAA_CENTER.lng, 11).slice(0, 4);
+
+/** True when the point sits inside the Al Qua'a 100 km cell, so the short,
+ *  region-relative `XXXX+XX` form (and the region label) is meaningful. */
+export function isRegionalShort(lat: number, lng: number): boolean {
+  const full = encodePlusCode(lat, lng);
+  return full.indexOf("+") === 8 && full.slice(0, 4) === REGION_PREFIX;
+}
 
 /**
  * Short, shout-it-aloud locator — the compact `XXXX+XX` form a person can read

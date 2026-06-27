@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { db } from "@/lib/store";
+import { normalizePhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 
 const ONBOARDED_KEY = "najda:onboarded";
@@ -33,7 +34,7 @@ export default function OnboardingPage() {
       if (name.trim() && phone.trim()) {
         await db.saveProfile({
           name: name.trim(),
-          phone: phone.trim(),
+          phone: normalizePhone(phone) ?? phone.trim(),
           is_responder: helpOthers,
           is_available: helpOthers,
         });

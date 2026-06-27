@@ -74,6 +74,9 @@ export interface CreateAlertInput {
   accuracy_m: number | null;
   note?: string | null;
   delivery?: "data" | "sms";
+  /** Optional client-supplied id so a re-flushed offline alert upserts to the
+   *  same row instead of creating a duplicate (see lib/dispatch-client.ts). */
+  client_id?: string;
 }
 
 // Aggregated metrics for the coordinator dashboard / evidence view.

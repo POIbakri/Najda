@@ -44,8 +44,11 @@ the number that matters most.
 > test of routing robustness** under availability churn, ties, or a large pool.
 
 ### 3. System latency (this is *overhead*, not impact — see below)
-> Median **SOS→delivery 1.34 s** and **SOS→acknowledgment 1.45 s**
-> (server-timestamped). Read these as "the software adds ~1.3 s of overhead" —
+> Median **SOS→delivery 1.34 s** and **SOS→acknowledgment 1.45 s**. Delivery is
+> **server-to-server** (`created_at` and `notified_at` are both DB `now()`
+> defaults). Acknowledgment uses the **controlled session's client clock** for
+> `accepted_at`, so it carries any client/DB clock skew — we don't claim it is
+> server-stamped. Read these as "the software adds ~1.3 s of overhead" —
 > negligible against a 30–60 minute baseline. They do **not** measure how fast a
 > human responds.
 
@@ -80,10 +83,17 @@ fallback. On the current Twilio **trial**, WhatsApp delivery requires the recipi
 to have joined the sandbox once (`join <code>` to the sandbox number); a paid
 WhatsApp Business sender removes that step.
 
+**Honest note on the fallback wording:** when an alert is raised offline the app
+records the *requested* fallback mode and shows a **"sent via fallback channel
+(SMS/WhatsApp)"** state — it does **not** claim a specific wire protocol it didn't
+use. The actual transport is resolved server-side: WhatsApp by default, or genuine
+SMS when an SMS sender (`TWILIO_SMS_FROM`) is configured. So the UI, the ledger
+`channel`, and the Twilio call agree.
+
 **Floor clip (`evidence/sms-demo.mp4`, pending — needs a device):** film a phone in
-airplane/no-data mode → raise an alert → app shows **"أُرسل عبر رسالة نصية / Sent
-via SMS"** and queues offline → responder phone receives the WhatsApp with the
-locator + deep link → reconnect → queued alert syncs.
+airplane/no-data mode → raise an alert → app shows the **offline fallback** state
+and queues offline → on reconnect the queued alert syncs and the responder phone
+receives the notification with the locator + deep link.
 
 ## Best tier — field drill protocol (still recommended; pending)
 1. Register **4–6 independent people** as responders at known coordinates; toggle **available** in `/respond`.

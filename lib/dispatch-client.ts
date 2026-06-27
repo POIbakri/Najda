@@ -35,7 +35,10 @@ export async function flushQueue(): Promise<number> {
     const items = await allQueued();
     for (const item of items) {
       try {
-        await db.createAlert(item.input);
+        // Pass the queue id as client_id so a create-succeeded-but-delete-failed
+        // window doesn't re-insert a duplicate alert on the next flush (the store
+        // upserts on this id).
+        await db.createAlert({ ...item.input, client_id: item.id });
         await removeQueued(item.id);
         sent++;
       } catch (e) {

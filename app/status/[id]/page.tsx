@@ -9,7 +9,7 @@ import { LocatorCard } from "@/components/locator-card";
 import { LoadingState, ErrorState } from "@/components/states";
 import { demoAutopilot, isSeedResponder } from "@/lib/config";
 import { db } from "@/lib/store";
-import { STATUS_ORDER, STATUS_LABEL_KEY } from "@/lib/emergency";
+import { STATUS_ORDER, STATUS_BADGE_KEY } from "@/lib/emergency";
 import { distanceKm, etaMinutes } from "@/lib/distance";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -212,7 +212,7 @@ function StatusStepper({ status }: { status: Alert["status"] }) {
             key={s}
             className="flex flex-1 flex-col items-center gap-1"
             aria-current={isCurrent ? "step" : undefined}
-            aria-label={`${t(STATUS_LABEL_KEY[s])} — ${isCurrent ? t("a11y.stepCurrent") : done ? t("a11y.stepDone") : ""}`}
+            aria-label={`${t(STATUS_BADGE_KEY[s])}${isCurrent ? ` — ${t("a11y.stepCurrent")}` : done ? ` — ${t("a11y.stepDone")}` : ""}`}
           >
             <span
               className={cn(

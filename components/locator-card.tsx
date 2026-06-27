@@ -3,7 +3,7 @@
 import { MapPin } from "lucide-react";
 import { useI18n } from "@/components/i18n";
 import { AlertMap, type MapPoint } from "@/components/alert-map-dynamic";
-import { shortPlusCode } from "@/lib/plus-code";
+import { shortPlusCode, isRegionalShort } from "@/lib/plus-code";
 import { cn } from "@/lib/utils";
 
 interface LocatorCardProps {
@@ -24,6 +24,10 @@ interface LocatorCardProps {
 export function LocatorCard({ plusCode, lat, lng, accuracyM, responder, children, className }: LocatorCardProps) {
   const { t, num } = useI18n();
   const shortCode = shortPlusCode(lat, lng);
+  // Only label the code with the region when it was actually shortened against
+  // it (i.e. the point is in Al Qua'a). A faraway full code is globally unique
+  // and naming a region it isn't in would be misleading.
+  const regional = isRegionalShort(lat, lng);
   return (
     <section
       aria-label={t("locator.title")}
@@ -39,10 +43,12 @@ export function LocatorCard({ plusCode, lat, lng, accuracyM, responder, children
         <p
           dir="ltr"
           className="tabular select-all break-all text-center font-bold leading-tight text-ink-900 text-[clamp(24px,8vw,30px)] tracking-[0.08em]"
-          aria-label={`${t("a11y.locationCode")}: ${shortCode} ${t("locator.region")}`}
+          aria-label={`${t("a11y.locationCode")}: ${shortCode}${regional ? ` ${t("locator.region")}` : ""}`}
         >
           {shortCode}
-          <span className="ms-2 align-middle text-caption font-bold tracking-normal text-ink-600">{t("locator.region")}</span>
+          {regional && (
+            <span className="ms-2 align-middle text-caption font-bold tracking-normal text-ink-600">{t("locator.region")}</span>
+          )}
         </p>
         {accuracyM != null && (
           <p className="text-center text-caption text-ink-600">{t("locator.accuracy", { n: num(accuracyM) })}</p>

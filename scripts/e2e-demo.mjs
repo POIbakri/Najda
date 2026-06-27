@@ -64,8 +64,12 @@ const searching = await page
   .catch(() => false);
 check(searching, "shows the 'searching' state");
 
+// Real OR across the three accepted-state headlines (a comma-joined `text=`
+// selector matches one literal string and never fires — short-circuit instead).
 await page
-  .waitForSelector("text=قادم إليك, text=في الطريق إليك, text=وصل إلى موقعك", { timeout: 16000 })
+  .getByText(/قادم إليك|في الطريق|وصل إلى موقعك/)
+  .first()
+  .waitFor({ timeout: 16000 })
   .catch(() => {});
 const accepted =
   (await page.locator("text=قادم إليك").count()) +

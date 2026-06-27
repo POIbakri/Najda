@@ -12,6 +12,7 @@ import { TYPE_LABEL_KEY, TYPE_COLOR } from "@/lib/emergency";
 import { distanceKm } from "@/lib/distance";
 import { shortPlusCode } from "@/lib/plus-code";
 import { getFix } from "@/lib/geolocation";
+import { normalizePhone } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import type { Alert, AlertType, Profile } from "@/lib/types";
 
@@ -60,7 +61,8 @@ export default function RespondPage() {
       }
       const saved = await db.saveProfile({
         name: name.trim() || profile?.name || t("common.responder"),
-        phone: phone.trim() || profile?.phone || "",
+        // normalize to E.164 so Twilio doesn't silently reject "050 000 0001"
+        phone: normalizePhone(phone) ?? profile?.phone ?? phone.trim(),
         is_responder: true,
         is_available: available,
         ...(home ? { home_lat: home.lat, home_lng: home.lng } : {}),
@@ -77,8 +79,11 @@ export default function RespondPage() {
   const available = profile?.is_available ?? false;
   const home = profile?.home_lat != null ? { lat: profile.home_lat, lng: profile.home_lng! } : null;
 
+  // Stable local identity — set even when onboarding was skipped, so a
+  // profile-less requester never sees their own alert in the responder feed.
+  const myId = db.meId();
   const sorted = [...alerts]
-    .filter((a) => !profile || a.requester_id !== profile.id) // don't show me my own alert
+    .filter((a) => myId == null || a.requester_id !== myId) // don't show me my own alert
     .sort((a, b) => {
       if (!home) return Date.parse(b.created_at) - Date.parse(a.created_at);
       return distanceKm(a.lat, a.lng, home.lat, home.lng) - distanceKm(b.lat, b.lng, home.lat, home.lng);

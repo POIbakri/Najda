@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Phone, Navigation, CheckCircle2, ArrowRight } from "lucide-react";
 import { useI18n } from "@/components/i18n";
@@ -11,6 +11,8 @@ import { db } from "@/lib/store";
 import { isSeedResponder } from "@/lib/config";
 import { TYPE_LABEL_KEY, OUTCOME_LABEL_KEY } from "@/lib/emergency";
 import { distanceKm } from "@/lib/distance";
+import { getFix, type FixResult } from "@/lib/geolocation";
+import { normalizePhone } from "@/lib/phone";
 import type { Alert, AlertOutcome, Profile } from "@/lib/types";
 
 const ETA_CHOICES = [3, 5, 10, 15];
@@ -26,6 +28,13 @@ export default function ResponderAlertPage() {
   const [responders, setResponders] = useState<Profile[]>([]);
   const [picking, setPicking] = useState(false);
   const [resolving, setResolving] = useState(false);
+  // in-place registration for a responder who arrived via the WhatsApp/SMS deep
+  // link without onboarding first (the normal real-world entry point)
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [acceptError, setAcceptError] = useState(false);
+  const homeFix = useRef<FixResult | null>(null);
 
   useEffect(() => {
     const unsub = db.subscribeAlert(id, (a) => {
@@ -41,9 +50,11 @@ export default function ResponderAlertPage() {
   if (!alert) return <ErrorState onRetry={() => router.replace("/respond")} />;
 
   const requesterPhone = responders.find((r) => r.id === alert.requester_id)?.phone ?? null;
-  // You can't respond to your own alert. Otherwise it's open if unclaimed, mine,
-  // or still held by the demo-responder autopilot (so a real device can take over).
-  const isOwnAlert = Boolean(me?.id) && me?.id === alert.requester_id;
+  // You can't respond to your own alert — checked against the stable local id so
+  // it holds even before a profile row loads. Otherwise it's open if unclaimed,
+  // mine, or still held by the demo-responder autopilot (a real device can take over).
+  const myId = db.meId();
+  const isOwnAlert = myId != null && myId === alert.requester_id;
   const mineOrOpen =
     !isOwnAlert &&
     (!alert.accepted_by ||
@@ -54,9 +65,37 @@ export default function ResponderAlertPage() {
     me?.home_lat != null ? Math.round(distanceKm(alert.lat, alert.lng, me.home_lat, me.home_lng!) * 10) / 10 : null;
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${alert.lat},${alert.lng}`;
 
+  // Tapping "I'm coming" warms up a GPS fix (only for unonboarded responders) so
+  // the accept can record the responder's start point without a blocking wait.
+  function openPicker() {
+    setPicking(true);
+    if (!me) void getFix(10000).then((f) => (homeFix.current = f)).catch(() => {});
+  }
+
   async function accept(eta: number) {
-    setPicking(false);
-    await db.acceptAlert(id, eta);
+    setAcceptError(false);
+    setBusy(true);
+    try {
+      // Deep-link responder with no profile: register in place before claiming,
+      // so acceptAlert has an identity to write (otherwise it silently no-ops).
+      if (!me) {
+        const h = homeFix.current;
+        const saved = await db.saveProfile({
+          name: name.trim() || t("common.responder"),
+          phone: normalizePhone(phone) ?? phone.trim(),
+          is_responder: true,
+          is_available: true,
+          ...(h ? { home_lat: h.lat, home_lng: h.lng } : {}),
+        });
+        setMe(saved);
+      }
+      await db.acceptAlert(id, eta);
+      setPicking(false);
+    } catch {
+      setAcceptError(true); // keep the picker open so they can retry
+    } finally {
+      setBusy(false);
+    }
   }
   async function resolve(outcome: AlertOutcome) {
     setResolving(false);
@@ -78,7 +117,7 @@ export default function ResponderAlertPage() {
 
   return (
     <div className="space-y-5 pt-2">
-      <button onClick={() => router.replace("/respond")} className="text-caption text-ink-600 underline">
+      <button onClick={() => router.replace("/respond")} className="inline-flex min-h-touch items-center px-2 text-caption text-ink-600 underline">
         {t("common.back")}
       </button>
 
@@ -106,8 +145,29 @@ export default function ResponderAlertPage() {
       {/* action zone */}
       {mineOrOpen && (
         <div className="space-y-3">
+          {/* first-time responder (arrived via the deep link): register in place */}
+          {alert.status === "searching" && !me && (
+            <div className="space-y-2 rounded-card bg-white p-4 shadow-soft">
+              <p className="text-caption font-bold text-ink-600">{t("responder.registerToHelp")}</p>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t("onboarding.namePlaceholder")}
+                className="min-h-touch w-full rounded-card border-2 border-ink-900/15 bg-sand-50 px-4 text-body focus-visible:border-ink-900 focus-visible:outline-none"
+              />
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={t("onboarding.phonePlaceholder")}
+                dir="ltr"
+                inputMode="tel"
+                className="min-h-touch w-full rounded-card border-2 border-ink-900/15 bg-sand-50 px-4 text-body focus-visible:border-ink-900 focus-visible:outline-none"
+              />
+            </div>
+          )}
+
           {alert.status === "searching" && !picking && (
-            <Button variant="relief" size="blockLg" onClick={() => setPicking(true)}>
+            <Button variant="relief" size="blockLg" onClick={openPicker} disabled={busy}>
               {t("responder.imComing")}
             </Button>
           )}
@@ -119,14 +179,20 @@ export default function ResponderAlertPage() {
                 {ETA_CHOICES.map((m) => (
                   <button
                     key={m}
+                    disabled={busy}
                     onClick={() => void accept(m)}
-                    className="min-h-touch rounded-card bg-relief-600 text-body font-bold text-white focus-visible:outline focus-visible:outline-3"
+                    className="min-h-touch rounded-card bg-relief-600 text-body font-bold text-white focus-visible:outline focus-visible:outline-3 disabled:opacity-60"
                   >
                     {num(m)}
                   </button>
                 ))}
               </div>
               <p className="text-center text-caption text-ink-600">{t("common.min")}</p>
+              {acceptError && (
+                <p role="alert" className="text-center text-caption font-bold text-flare-700">
+                  {t("responder.acceptFailed")}
+                </p>
+              )}
             </div>
           )}
 

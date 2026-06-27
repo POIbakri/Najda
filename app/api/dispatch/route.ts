@@ -67,19 +67,27 @@ async function dispatch(req: Request, alertId: string) {
   const origin = baseUrl || new URL(req.url).origin;
   const link = `${origin}/respond/${alertId}`;
 
+  // Honor the alert's delivery mode: an offline-raised (sms) alert routes through
+  // the SMS sender when one is configured, else WhatsApp (twilio.ts decides + reports).
+  const channel = alert.delivery === "sms" ? ("sms" as const) : ("whatsapp" as const);
+
   const results = await Promise.all(
     responders.map((r) => {
       const phone = phones.get(r.responder_id);
       if (!phone) return Promise.resolve({ to: r.responder_id, ok: false, error: "no phone" });
       // Arabic-first message; the locator is the load-bearing line.
+      const dist = Number.isFinite(r.distance_km) ? r.distance_km : 0;
       const body =
-        `🚨 نجدة: ${TYPE_AR[alert.type] ?? alert.type} على بُعد ~${r.distance_km} كم.\n` +
+        `🚨 نجدة: ${TYPE_AR[alert.type] ?? alert.type} على بُعد ~${dist} كم.\n` +
         `رمز الموقع: ${alert.plus_code ?? `${alert.lat},${alert.lng}`}\n` +
         `استجب: ${link}\n` +
         `الطوارئ: ${EMERGENCY_NUMBER}`;
-      return sendMessage(phone, body);
+      return sendMessage(phone, body, { channel });
     }),
   );
+
+  const failed = results.filter((r) => !r.ok);
+  if (failed.length) console.error("[najda dispatch] some sends failed", failed);
 
   return NextResponse.json({
     ok: true,

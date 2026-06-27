@@ -13,6 +13,11 @@ import type {
 export interface Store {
   readonly mode: "demo" | "supabase";
 
+  /** Stable local identity (localStorage), available before a Profile row loads.
+   *  Used for self-checks (don't show/answer your own alert) that must hold even
+   *  when onboarding was skipped. Null when this device has no identity yet. */
+  meId(): string | null;
+
   // profiles
   getProfile(): Promise<Profile | null>;
   saveProfile(input: Partial<Profile> & { name: string; phone: string }): Promise<Profile>;

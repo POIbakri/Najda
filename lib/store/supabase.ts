@@ -68,6 +68,8 @@ function computeMetrics(alerts: Alert[], responders: AlertResponder[]): Metrics 
 export const supabaseStore: Store = {
   mode: "supabase",
 
+  meId: () => getMeId(),
+
   async getProfile() {
     const id = getMeId();
     if (!id) return null;
@@ -107,9 +109,18 @@ export const supabaseStore: Store = {
       const { data: prof } = await db().from("profiles").select("name").eq("id", me).maybeSingle();
       requesterName = (prof as { name?: string } | null)?.name ?? null;
     }
+    // Idempotent on client_id: if a prior flush already created this offline alert
+    // (but the IndexedDB delete then failed, so it's being flushed again), return
+    // the EXISTING row untouched — no duplicate SOS, no second dispatch, and no
+    // status reset on an alert a responder may have meanwhile accepted.
+    if (input.client_id) {
+      const { data: existing } = await db().from("alerts").select("*").eq("id", input.client_id).maybeSingle();
+      if (existing) return existing as Alert;
+    }
     const { data, error } = await db()
       .from("alerts")
       .insert({
+        ...(input.client_id ? { id: input.client_id } : {}),
         requester_id: me,
         requester_name: requesterName,
         type: input.type,
@@ -126,25 +137,41 @@ export const supabaseStore: Store = {
     if (error) throw error;
     const alert = data as Alert;
 
-    // Rank nearest responders via the RPC, write the ledger, fire dispatch.
-    const { data: nearest } = await db().rpc("nearest_responders", { a_lat: alert.lat, a_lng: alert.lng, max_n: 5 });
-    // never notify the requester about their own alert (parity with the demo store)
+    // Rank nearest responders via the RPC; exclude_id keeps the requester out of
+    // the result BEFORE the LIMIT, so a genuine 5th responder isn't displaced.
+    const { data: nearest } = await db().rpc("nearest_responders", {
+      a_lat: alert.lat,
+      a_lng: alert.lng,
+      max_n: 5,
+      exclude_id: me ?? undefined,
+    });
+    // belt-and-suspenders self-filter (in case an old RPC without exclude_id runs)
     const rows = ((nearest as Profile[]) ?? []).filter((p) => p.id !== me).map((p) => ({
       alert_id: alert.id,
       responder_id: p.id,
       responder_name: p.name,
       distance_km:
         p.home_lat != null ? Math.round(distanceKm(alert.lat, alert.lng, p.home_lat, p.home_lng!) * 10) / 10 : 0,
+      // Requested fallback mode. The actual wire transport is resolved server-side
+      // by /api/dispatch (WhatsApp, or SMS when an SMS sender is configured).
       channel: input.delivery === "sms" ? "sms" : "whatsapp",
       status: "notified",
     }));
     if (rows.length) await db().from("alert_responders").insert(rows);
     // Twilio dispatch (server route; simulates when Twilio not configured).
+    // Non-blocking, but we read the result and log any per-recipient failures so
+    // a swallowed sandbox opt-in (63015) / out-of-window error is at least visible.
     void fetch("/api/dispatch", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ alertId: alert.id }),
-    }).catch(() => {});
+    })
+      .then((r) => r.json())
+      .then((res) => {
+        const failed = (res?.results ?? []).filter((x: { ok?: boolean }) => x && x.ok === false);
+        if (failed.length) console.error("[najda dispatch] some sends failed", failed);
+      })
+      .catch(logErr);
     return alert;
   },
 
@@ -167,8 +194,15 @@ export const supabaseStore: Store = {
   async acceptAlert(alertId, eta) {
     const id = getMeId();
     if (!id) return;
-    const { data: me } = await db().from("profiles").select("*").eq("id", id).single();
-    const p = me as Profile;
+    const { data: me, error: meErr } = await db().from("profiles").select("*").eq("id", id).maybeSingle();
+    if (meErr) logErr(meErr);
+    const p = me as Profile | null;
+    if (!p) {
+      // Stale local id with no profile row — log and bail instead of throwing an
+      // unhandled rejection on the deref below (matches the file's null-tolerant reads).
+      logErr("acceptAlert: no profile for local id");
+      return;
+    }
     // First-accept-wins: the conditional update only matches while the alert is
     // still searching, so a second responder racing to accept matches 0 rows and
     // does NOT clobber the first. (Mirrors the demo store's claimable guard.)
@@ -272,7 +306,12 @@ export const supabaseStore: Store = {
   async simulateNearestResponder(alertId: string) {
     const alert = await this.getAlert(alertId);
     if (!alert || alert.status !== "searching") return;
-    const { data: nearest } = await db().rpc("nearest_responders", { a_lat: alert.lat, a_lng: alert.lng, max_n: 5 });
+    const { data: nearest } = await db().rpc("nearest_responders", {
+      a_lat: alert.lat,
+      a_lng: alert.lng,
+      max_n: 5,
+      exclude_id: alert.requester_id ?? undefined,
+    });
     // never let the requester be dispatched to their own alert (self-rescue)
     const r = ((nearest as Profile[]) ?? []).find((x) => x.id !== alert.requester_id);
     if (!r) return;

@@ -103,9 +103,9 @@ path: onboarding, the SOS flow, a live requester status screen with the responde
 approaching, the full responder side (availability, nearest-first list, "I'm
 coming" + ETA, status machine through resolved + outcome), a coordinator dashboard
 with live medians, and all the awkward states — location failed (drag a pin
-instead), no data ("Sent via SMS"), nobody answering yet (escalate to 998),
-cancelled. Offline, the app shell loads and an SOS queues in IndexedDB and syncs on
-reconnect.
+instead), no data (an offline fallback channel), nobody answering yet (escalate to
+998), cancelled. Offline, the app shell loads and an SOS queues in IndexedDB and
+syncs on reconnect.
 
 I'd rather be precise than impressive, so here's what's real versus wired:
 
@@ -114,7 +114,7 @@ I'd rather be precise than impressive, so here's what's real versus wired:
 | The whole demo path (SOS → resolved) | Real — verified end to end in a headless browser (`npm run e2e`) |
 | Address-free Plus Code locator | Real — accuracy measured |
 | Nearest-responder ranking | Real (Haversine in the demo store / `earthdistance` RPC in Supabase) |
-| Realtime, offline shell, "Sent via SMS" states | Real |
+| Realtime, offline shell, offline-fallback state | Real |
 | Cross-device backend (Supabase) | Live in production |
 | WhatsApp/SMS sending (Twilio) | **Real** — a live alert was delivered to a responder's WhatsApp, Twilio status `read` ([evidence](./evidence/whatsapp-dispatch.md)); the sandbox needs each recipient to join once |
 | Lone-judge "demo responder" | Simulated and clearly labelled ("مستجيب تجريبي") so one person sees the full arc |
@@ -152,9 +152,11 @@ numbers, which is the whole point.
   **0.6–3.1 km away → ~1–4 min to scene** by a distance ÷ speed model, vs **30–60
   min** for EMS to a remote village. Clearly an **illustrative model, not a measured
   field result** — the field drill is what would prove it.
-- **System overhead (not impact):** median **SOS→delivery 1.34 s** /
-  **acknowledgment 1.45 s**, server-timed. This is software overhead with a session
-  acking on cue — *not* a human deciding to respond; I label it that way plainly.
+- **System overhead (not impact):** median **SOS→delivery 1.34 s** (server-to-server:
+  both timestamps are DB `now()`) / **acknowledgment 1.45 s** (the controlled
+  session's client clock, so it carries clock skew — not server-stamped). This is
+  software overhead with a session acking on cue — *not* a human deciding to
+  respond; I label it that way plainly.
 - **Routing speed:** **0.26 ms** to rank the nearest 5 of 1,000 responders.
 - **WhatsApp/SMS fallback (verified live):** the production dispatch route
   delivered a **real WhatsApp** alert — Arabic message, locator, and one-tap

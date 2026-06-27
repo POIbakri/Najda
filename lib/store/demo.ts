@@ -8,15 +8,12 @@
 // A real second device on /respond takes over from the autopilot (the autopilot
 // stands down the moment a human accepts), which is the true two-phone demo.
 
-import { ALQUAA_CENTER } from "@/lib/config";
+import { demoAutopilot } from "@/lib/config";
 import { distanceKm, etaMinutes } from "@/lib/distance";
 import { encodePlusCode } from "@/lib/plus-code";
 import type {
   Alert,
-  AlertOutcome,
   AlertResponder,
-  AlertStatus,
-  CreateAlertInput,
   Metrics,
   Profile,
 } from "@/lib/types";
@@ -56,7 +53,27 @@ function getChannel(): BroadcastChannel | null {
 
 function write(db: DB): void {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(DB_KEY, JSON.stringify(db));
+  try {
+    window.localStorage.setItem(DB_KEY, JSON.stringify(db));
+  } catch {
+    // Quota exceeded (a long kiosk session accumulates alerts). Shed the oldest
+    // finished alerts (and their ledger rows) and retry once; if it still fails,
+    // give up quietly rather than throw out of an autopilot timer / user action.
+    try {
+      const finished = new Set(
+        db.alerts
+          .filter((a) => a.status === "resolved" || a.status === "cancelled")
+          .sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at))
+          .slice(0, Math.ceil(db.alerts.length / 2))
+          .map((a) => a.id),
+      );
+      db.alerts = db.alerts.filter((a) => !finished.has(a.id));
+      db.alert_responders = db.alert_responders.filter((r) => !finished.has(r.alert_id));
+      window.localStorage.setItem(DB_KEY, JSON.stringify(db));
+    } catch {
+      return; // persistence is best-effort; in-memory state is still consistent
+    }
+  }
   emitLocal();
   getChannel()?.postMessage("change");
 }
@@ -248,6 +265,8 @@ function computeMetrics(db: DB): Metrics {
 export const demoStore: Store = {
   mode: "demo",
 
+  meId: () => getMeId(),
+
   async getProfile() {
     const id = getMeId();
     if (!id) return null;
@@ -303,8 +322,14 @@ export const demoStore: Store = {
     const db = seedInto(read());
     const me = getMeId();
     const meProfile = db.profiles.find((p) => p.id === me);
+    // Idempotent: a re-flushed offline alert reuses its client_id, so we update
+    // the existing row instead of pushing a duplicate.
+    if (input.client_id) {
+      const existing = db.alerts.find((a) => a.id === input.client_id);
+      if (existing) return existing;
+    }
     const alert: Alert = {
-      id: uid(),
+      id: input.client_id ?? uid(),
       requester_id: me,
       requester_name: meProfile?.name ?? null,
       type: input.type,
@@ -349,7 +374,9 @@ export const demoStore: Store = {
       });
     }
     write(db);
-    runAutopilot(alert.id);
+    // Gated identically to the Supabase path (app/status). With the flag off, a
+    // pure manual / two-phone demo runs without the demo responder racing in.
+    if (demoAutopilot) runAutopilot(alert.id);
     return alert;
   },
 

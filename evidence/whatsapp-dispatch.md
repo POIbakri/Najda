@@ -45,9 +45,11 @@ handset and opened — the strongest delivery signal Twilio exposes.
 point; a real alert computes the true Haversine distance. The `استجب` link opens
 the responder screen for that specific alert.)
 
-A phone screenshot of the received message — including WhatsApp's rich link
-preview card for `najda.vercel.app` — is at
-[`whatsapp-dispatch.png`](./whatsapp-dispatch.png).
+The phone screenshot of the received message — including WhatsApp's rich link
+preview card for `najda.vercel.app`:
+
+<img src="./whatsapp-dispatch.png" width="300" alt="Real WhatsApp alert received on a responder's phone — Najda link preview, Arabic locator message, deep link, 998">
+
 
 ## Honest caveats
 

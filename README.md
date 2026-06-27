@@ -35,9 +35,12 @@ street addresses and an ambulance is far away. It complements emergency services
   </tr>
 </table>
 
-The verified real **WhatsApp** dispatch to a responder's phone is in
-[`evidence/whatsapp-dispatch.md`](./evidence/whatsapp-dispatch.md) (Twilio delivery
-status `read`).
+And the moment it matters — a **real WhatsApp alert** delivered to a responder's
+phone (Twilio delivery status `read`; full record in
+[`evidence/whatsapp-dispatch.md`](./evidence/whatsapp-dispatch.md)):
+
+<img src="evidence/whatsapp-dispatch.png" width="230" alt="Real WhatsApp alert on a responder's phone: Najda link preview, Arabic locator message (GFJR+C2), respond deep link, 998">
+
 
 ---
 

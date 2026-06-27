@@ -3,7 +3,7 @@
 **First-minutes community response for Al Qua'a.**
 By **Bakri Albreiki** — solo build for the Tatweer Hackathon, Challenge 2.
 
-**Live:** https://najda.vercel.app · **Demo video:** _coming_ · **Challenge:** 2 — reaching people quickly across a dispersed community
+**Live:** https://najda.vercel.app · **Demo video:** [watch (~1 min)](https://drive.google.com/file/d/164176toCJ1kncrwCV4HMXdM-W90RS7On/view?usp=sharing) · **Challenge:** 2 — reaching people quickly across a dispersed community
 
 Najda is an Arabic-first web app that shares a precise, address-free location and
 alerts the nearest opted-in neighbour in seconds — for a place where there are no
@@ -237,7 +237,7 @@ One scenario, in Arabic, on a phone: someone collapses in a date farm → SOS �
 medical → the locator locks → the nearest neighbour gets a WhatsApp → "أنا قادم ·
 ٤ دقائق" → the requester watches them approach → resolved. Then I show the SMS
 fallback in airplane mode and the dashboard medians, and I hand a judge a phone to
-raise their own test alert. (Video link coming at the top of this README.)
+raise their own test alert. ([Demo video](https://drive.google.com/file/d/164176toCJ1kncrwCV4HMXdM-W90RS7On/view?usp=sharing) — linked at the top of this README.)
 
 **On stage I run the *real* two-phone flow** — one phone raises the alert, a second
 phone (a real responder) accepts and moves — with the labelled demo-responder

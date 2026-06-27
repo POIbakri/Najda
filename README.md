@@ -18,6 +18,29 @@ street addresses and an ambulance is far away. It complements emergency services
 
 ---
 
+## A look at the app
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/home.png" width="190" alt="SOS home"><br><sub>SOS home</sub></td>
+    <td align="center"><img src="docs/screenshots/sos-types.png" width="190" alt="Emergency type picker"><br><sub>Pick the emergency</sub></td>
+    <td align="center"><img src="docs/screenshots/locator.png" width="190" alt="Address-free Plus Code locator"><br><sub>Address-free locator (القوع)</sub></td>
+    <td align="center"><img src="docs/screenshots/dashboard.png" width="190" alt="Coordinator dashboard with live metrics"><br><sub>Live coordinator dashboard</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/responder.png" width="190" alt="Responder availability and nearby requests"><br><sub>Responder view</sub></td>
+    <td align="center"><img src="docs/screenshots/onboarding-role.png" width="190" alt="Onboarding — choose your role"><br><sub>Onboarding</sub></td>
+    <td align="center"><img src="docs/screenshots/onboarding-details.png" width="190" alt="Register name and phone"><br><sub>Register to help</sub></td>
+    <td align="center"><img src="docs/screenshots/home-en.png" width="190" alt="Home in English"><br><sub>Bilingual (EN)</sub></td>
+  </tr>
+</table>
+
+The verified real **WhatsApp** dispatch to a responder's phone is in
+[`evidence/whatsapp-dispatch.md`](./evidence/whatsapp-dispatch.md) (Twilio delivery
+status `read`).
+
+---
+
 ## 1 · Impact — a documented, pressing need
 *Speaks to: Impact (criterion 1, the first tiebreak) + Relevance (criterion 2).*
 

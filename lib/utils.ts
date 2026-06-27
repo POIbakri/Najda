@@ -1,5 +1,19 @@
 import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+// Teach tailwind-merge our custom fontSize utilities (tailwind.config.ts:
+// text-caption/body/locator/title/hero). Without this it mistakes e.g. `text-body`
+// for a text-COLOR class and, on a conflict, drops the real colour — so a primary
+// button rendered `bg-ink-900 text-sand-50 … text-body` would lose `text-sand-50`
+// and show invisible dark-on-dark text. Registering them as font-size keeps colour
+// and size in separate conflict groups.
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [{ text: ["caption", "body", "locator", "title", "hero"] }],
+    },
+  },
+});
 
 /** Tailwind-aware className combiner (shadcn convention). */
 export function cn(...inputs: ClassValue[]) {

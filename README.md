@@ -116,7 +116,7 @@ I'd rather be precise than impressive, so here's what's real versus wired:
 | Nearest-responder ranking | Real (Haversine in the demo store / `earthdistance` RPC in Supabase) |
 | Realtime, offline shell, "Sent via SMS" states | Real |
 | Cross-device backend (Supabase) | Live in production |
-| WhatsApp/SMS sending (Twilio) | Wired and verified live; the trial account only delivers to verified numbers |
+| WhatsApp/SMS sending (Twilio) | **Real** — a live alert was delivered to a responder's WhatsApp, Twilio status `read` ([evidence](./evidence/whatsapp-dispatch.md)); the sandbox needs each recipient to join once |
 | Lone-judge "demo responder" | Simulated and clearly labelled ("مستجيب تجريبي") so one person sees the full arc |
 | Voice note, OTP auth, inbound-SMS | Cut for scope (said so honestly) |
 
@@ -156,8 +156,12 @@ numbers, which is the whole point.
   **acknowledgment 1.45 s**, server-timed. This is software overhead with a session
   acking on cue — *not* a human deciding to respond; I label it that way plainly.
 - **Routing speed:** **0.26 ms** to rank the nearest 5 of 1,000 responders.
-- **WhatsApp/SMS fallback:** the live dispatch route made **real Twilio WhatsApp
-  calls** (`simulated:false`); trial delivery needs the recipient to join the sandbox.
+- **WhatsApp/SMS fallback (verified live):** the production dispatch route
+  delivered a **real WhatsApp** alert — Arabic message, locator, and one-tap
+  responder link — to a community responder's phone. Twilio reports delivery
+  status **`read`** (not merely sent), `simulated:false`
+  ([evidence + screenshot](./evidence/whatsapp-dispatch.md)). Sandbox delivery
+  needs the recipient to join once; a WhatsApp Business sender removes that.
 - **Baseline:** urban 7.5–8.5 min vs remote villages 30–60 min, cited with sources.
 
 I use a tiered approach and state the exact conditions at each tier — and I'm plain

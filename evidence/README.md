@@ -8,6 +8,7 @@ explicit about what we have **not** validated.
 |---|---|---|
 | [`locator-accuracy.md`](./locator-accuracy.md) | Address-free locator accuracy vs true coordinates | **Automated, reproducible in-repo** |
 | [`dispatch-latency.md`](./dispatch-latency.md) | In-app SOS→notify processing latency | **Automated, reproducible in-repo** |
+| [`whatsapp-dispatch.md`](./whatsapp-dispatch.md) | Real WhatsApp alert delivered to a responder's phone (Twilio status `read`) | **Live, verified against production** |
 | [`baseline.md`](./baseline.md) | Cited UAE EMS response-time baseline | **External, sourced** |
 | [`drill.md`](./drill.md) | Field drill protocol + results table | **Human-run (pending)** |
 
